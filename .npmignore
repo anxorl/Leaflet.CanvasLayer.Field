@@ -1,0 +1,7 @@
+.vscode/
+src/
+tools/
+.npmignore
+webpack*
+tsconfig*
+*.tgz
