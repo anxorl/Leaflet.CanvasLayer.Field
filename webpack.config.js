@@ -1,48 +1,66 @@
-// webpack.config.js
-const webpack = require('webpack')
-const path = require('path')
-const WebpackShellPlugin = require('webpack-shell-plugin')
+var path = require("path")
+var webpack = require("webpack")
+var WebpackBuildNotifierPlugin = require("webpack-build-notifier")
+const ExtractTextPlugin = require("extract-text-webpack-plugin")
 
-const config = {
-    context: path.resolve(__dirname, 'src'),
-    entry: './_main.js',
-    output: {
-        path: path.resolve(__dirname, 'dist'),
-        filename: 'leaflet.canvaslayer.field.js'
-    },
-    module: {
-        rules: [
-            {
-                enforce: 'pre',
-                test: /\.js$/,
-                include: path.resolve(__dirname, 'src'),
-                exclude: '/node_modules/',
-                loader: "eslint-loader"
-            },
-            {
-                test: /\.js$/,
-                include: path.resolve(__dirname, 'src'),
-                exclude: '/node_modules/',
-                use: [
-                    {
-                        loader: 'babel-loader',
-                        options: {
-                            presets: [
-                        ['es2015', {
-                                    modules: false
-                        }]
-                    ]
-                        }
-                }]
-            }
-        ]
-    },
-    plugins: [
-    new WebpackShellPlugin({
-            onBuildStart: ['echo "Webpack Start"'],
-            onBuildEnd: ['node copy-to-examples.js']
-        })
-  ]
+const PATHS = {
+  src: path.join(__dirname, './src'),
+  dist: path.join(__dirname, './dist')
 }
 
-module.exports = config
+module.exports = {
+
+  entry: {
+    "leaflet-grid": PATHS.src + '/LeafletGrid.ts',
+  },
+  output: {
+    path: PATHS.dist,
+    filename: '[name].js',
+    libraryTarget: 'umd'
+  },
+  devtool: "source-map",
+  module: {
+    rules: [{
+        test: /\.ts$/,
+        use: 'tslint-loader',
+        enforce: 'pre'
+      },
+      {
+        test: /\.ts$/,
+        use: 'awesome-typescript-loader'
+      }
+    ]
+  },
+
+  externals: {
+    'chroma-js': 'chroma-js',
+    'd3-array': 'd3-array',
+    'd3-scale': 'd3-scale',
+    'd3-selection': 'd3-selection',
+    'd3-timer': 'd3-timer',
+    'geotiff': 'geotiff',
+    'leaflet': 'leaflet',
+    'leaflet-canvas-layer': 'leaflet-canvas-layer',
+    '../../node_modules/leaflet/dist/leaflet.css': 'leaflet/dist/leaflet.css'
+  },
+
+  resolve: {
+    // you can now require('file') instead of require('file.js')
+    extensions: ['.ts', '.js']
+  },
+  plugins: [
+    /* new WebpackBuildNotifierPlugin({
+      title: "Construcción visorMallas"
+    }), */
+    new ExtractTextPlugin('visor-mallas.css'),
+    new webpack.optimize.UglifyJsPlugin({
+      mangle: {
+        keep_fnames: true
+      }
+    })
+  ],
+  watchOptions: {
+    ignored: '/node_modules/',
+    poll: 2000
+  }
+}
