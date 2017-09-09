@@ -1,10 +1,11 @@
 // tslint:disable-next-line:no-reference
-///<reference path='../geotiff/geotiff.d.ts'/>
+// <reference path='../geotiff/geotiff.d.ts'/>
 
 import { max, min } from 'd3-array'
 import { IMallaParams, Malla } from './Malla'
 
-import { GeoTIFF } from 'geotiff'
+// tslint:disable-next-line:no-var-requires
+const GeoTIFF = require('geotiff')
 
 export interface IMallaEscalarParams extends IMallaParams {
     zs?: number[]
