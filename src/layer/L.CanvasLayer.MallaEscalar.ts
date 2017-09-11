@@ -1,14 +1,15 @@
 import * as chroma from 'chroma-js'
-import { Bounds, bounds, LatLng, LayerOptions, Util } from 'leaflet'
+import { Bounds, bounds, LatLng, Util } from 'leaflet'
 import { ColorScale } from '../colorscale/L.ColorScale'
 import { Celda } from '../grid/Celda'
 import { MallaEscalar } from '../grid/MallaEscalar'
-import { CanvasLayerMalla } from './L.CanvasLayer.Malla'
+import { CanvasLayerMalla, ICanvasLayerMallaOptions } from './L.CanvasLayer.Malla'
 import Scale = chroma.Scale
 
-export interface ICanvasLayerMallaEscalarOptions extends LayerOptions {
+export interface ICanvasLayerMallaEscalarOptions extends ICanvasLayerMallaOptions {
+    arrowColor?: string
     arrowDirection?: string,
-    color?: string | Scale,
+    color?: Scale,
     interpolate?: boolean,
     type?: string,
     vectorSize?: number
@@ -21,7 +22,8 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
     protected _malla: MallaEscalar
     protected _colorO: Scale = chroma.scale(ColorScale.scales('troposfera').colors).domain(this._malla.range)
 
-    protected _options: { [x: string]: any } = {
+    protected options: ICanvasLayerMallaEscalarOptions = {
+        arrowColor: 'grey',
         arrowDirection: 'from', // [from|towards]
         color: this._colorO, // function colorFor(value) [e.g. chromajs.scale],
         interpolate: true, // Change to use interpolation
@@ -57,6 +59,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
     public getEvents() {
         const events = super.getEvents()
         events.click = this._onClick
+        events.mousemove = this._onMouseMove
         return events
     }
 
@@ -158,7 +161,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
         )
 
         const ctx = this._getDrawingContext()
-        ctx.strokeStyle = this.options.color
+        ctx.strokeStyle = this.options.arrowColor
 
         const currentBounds = this._map.getBounds()
 
@@ -194,7 +197,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
         // colormap vs. simple color
         const color = this.options.color
         if (typeof color === 'function') {
-            ctx.strokeStyle = color(celda.value)
+            ctx.strokeStyle = color(celda.value).name()
         }
 
         const size = this.options.vectorSize
@@ -221,12 +224,12 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
     /**
      * Gets a chroma color for a pixel value, according to 'options.color'
      */
-    private _getColorFor(v: any) {
-        let c = this.options.color // e.g. for a constant 'red'
-        if (typeof c === 'function') {
+    private _getColorFor(v: number) {
+        const c = this.options.color // e.g. for a constant 'red'
+        /* if (typeof c === 'function') {
             c = this.options.color(v)
-        }
-        const color = chroma(c) // to be more flexible, a chroma color object is always created || TODO improve efficiency
+        } */
+        const color = chroma(c(v).name()) // to be more flexible, a chroma color object is always created || TODO improve efficiency
         return color
     }
 }

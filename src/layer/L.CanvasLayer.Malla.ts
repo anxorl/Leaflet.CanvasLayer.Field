@@ -7,19 +7,26 @@ import { CanvasLayer } from 'leaflet-canvas-layer'
 import { Malla } from '../grid/Malla'
 import { Vector } from '../grid/Vector'
 
-export abstract class CanvasLayerMalla<T extends number | Vector> extends CanvasLayer {
-    protected _onClickO: LeafletEventHandlerFn
-    protected _inFilterO: any
-    protected _onMouseMoveO: LeafletEventHandlerFn
+export interface ICanvasLayerMallaOptions extends LayerOptions {
+    inFilter?: any
+    mouseMoveCursor?: { [x: string]: string }
+    onClick?: LeafletEventHandlerFn
+    onMouseMove?: LeafletEventHandlerFn
+    opacity?: number
+}
 
-    protected _options: { [x: string]: any } = {
+export abstract class CanvasLayerMalla<T extends number | Vector> extends CanvasLayer {
+
+    protected _inFilterO: any
+
+    protected options: ICanvasLayerMallaOptions = {
         inFilter: this._inFilterO,
         mouseMoveCursor: {
             noValue: 'default',
             value: 'pointer'
         },
         onClick: this._onClick,
-        onMouseMove: this._onMouseMoveO,
+        onMouseMove: this._onMouseMove,
         opacity: 1
     }
 
@@ -36,9 +43,6 @@ export abstract class CanvasLayerMalla<T extends number | Vector> extends Canvas
     /* eslint-disable no-unused-vars */
     public abstract onDrawLayer(viewInfo: any): any
     /* eslint-enable no-unused-vars */
-
-    protected get options() { return this._options }
-    protected set options(options) { this._options = options }
 
     public getEvents(): any {
         const events = super.getEvents()

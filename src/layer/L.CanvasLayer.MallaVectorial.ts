@@ -6,11 +6,21 @@ import { interval, Timer } from 'd3-timer'
 import { LatLng, LayerOptions, Util } from 'leaflet'
 import { MallaVectorial } from '../grid/MallaVectorial'
 import { Vector } from '../grid/Vector'
-import { CanvasLayerMalla } from './L.CanvasLayer.Malla'
+import { CanvasLayerMalla, ICanvasLayerMallaOptions } from './L.CanvasLayer.Malla'
+
+export interface ICanvasLayerMallaVectorialOptions extends ICanvasLayerMallaOptions {
+    color?: string
+    duration?: number
+    fade?: number
+    maxAge?: number
+    paths?: number
+    velocityScale?: number
+    width?: number
+}
 
 export class CanvasLayerMallaVectorial extends CanvasLayerMalla<Vector> {
 
-    protected _options = {
+    protected options: ICanvasLayerMallaVectorialOptions = {
         color: 'grey', // html-color | function colorFor(value) [e.g. chromajs.scale]
         duration: 40, // milliseconds per 'frame'
         fade: .97, // 0 to 1
