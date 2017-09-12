@@ -1,6 +1,6 @@
 {
   "name": "leaflet-grid",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "description": "Show grid data in a map.",
   "main": "dist/leaflet-grid.js",
   "types": "dist/LeafletGrid.d.ts",
