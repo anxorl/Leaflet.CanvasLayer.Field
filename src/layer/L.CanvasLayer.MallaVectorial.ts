@@ -56,13 +56,13 @@ export class CanvasLayerMallaVectorial extends CanvasLayerMalla<Vector> {
     // onLayerDidMount() { super.onLayerDidMount(); }
 
     protected onLayerWillUnmount() {
-        super.onLayerWillUnmount()
         this._stopAnimation()
+        super.onLayerWillUnmount()
     }
 
     protected _hideCanvas() {
-        super._hideCanvas()
         this._stopAnimation()
+        super._hideCanvas()
     }
 
     private _drawParticle(viewInfo: any, ctx: CanvasRenderingContext2D, par: any) {
