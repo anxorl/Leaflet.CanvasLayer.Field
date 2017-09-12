@@ -10,6 +10,7 @@ export interface ICanvasLayerMallaEscalarOptions extends ICanvasLayerMallaOption
     arrowColor?: string
     arrowDirection?: string,
     color?: Scale,
+    pixelStep?: number,
     type?: string,
     vectorSize?: number
 }
@@ -26,6 +27,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
         arrowDirection: 'from', // [from|towards]
         color: this._colorO, // function colorFor(value) [e.g. chromajs.scale],
         interpolate: true, // Change to use interpolation
+        pixelStep: 2,
         type: 'colormap', // [colormap|vector]
         vectorSize: 20 // only used if 'vector'
     }
@@ -115,7 +117,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
      * @param {Number} height
      */
     private _prepareImageIn(data: any, width: number, height: number) {
-        const step = 2
+        const step = this.options.pixelStep
         let z = 0
         for (let j = 0; j < height; j += step) {
             for (let i = 0; i < width; i += step) {
@@ -123,10 +125,9 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
                 const lon = pointCoords.lng
                 const lat = pointCoords.lat
 
-                let v: number
-                this.options.interpolate
-                    ? v = this._malla.interpolatedValueAt(lon, lat)
-                    : v = this._malla.valueAt(lon, lat) // 'valueAt' | 'interpolatedValueAt'
+                const v: number = this.options.interpolate
+                    ? this._malla.interpolatedValueAt(lon, lat)
+                    : this._malla.valueAt(lon, lat) // 'valueAt' | 'interpolatedValueAt'
 
                 if (v !== null) {
                     z++
@@ -145,6 +146,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
                 // pos = pos + 4
             }
         }
+        console.log(z)
     }
 
     /**
