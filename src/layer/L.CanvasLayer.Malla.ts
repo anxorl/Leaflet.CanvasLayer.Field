@@ -9,6 +9,7 @@ import { Vector } from '../grid/Vector'
 
 export interface ICanvasLayerMallaOptions extends LayerOptions {
     inFilter?: any
+    interpolate?: boolean
     mouseMoveCursor?: { [x: string]: string }
     onClick?: LeafletEventHandlerFn
     onMouseMove?: LeafletEventHandlerFn
@@ -178,7 +179,9 @@ export abstract class CanvasLayerMalla<T extends number | Vector> extends Canvas
 
     private _queryValue(e: any): { latlng: LatLng, value: number | Vector } {
         const v = this._malla
-            ? this._malla.valueAt(e.latlng.lng, e.latlng.lat)
+            ? (this.options.interpolate
+                ? this._malla.interpolatedValueAt(e.latlng.lng, e.latlng.lat)
+                : this._malla.valueAt(e.latlng.lng, e.latlng.lat))
             : null
         const result = {
             latlng: e.latlng,

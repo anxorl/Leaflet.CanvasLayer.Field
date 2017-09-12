@@ -10,7 +10,6 @@ export interface ICanvasLayerMallaEscalarOptions extends ICanvasLayerMallaOption
     arrowColor?: string
     arrowDirection?: string,
     color?: Scale,
-    interpolate?: boolean,
     type?: string,
     vectorSize?: number
 }
