@@ -1,6 +1,6 @@
 {
   "name": "leaflet-grid",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Show grid data in a map.",
   "main": "dist/leaflet-grid.js",
   "types": "dist/LeafletGrid.d.ts",
@@ -8,7 +8,7 @@
     "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "webpack --watch",
-    "publish:patch":"npm version patch && npm publish"
+    "publish:patch": "npm version patch && npm publish"
   },
   "author": "Anxo",
   "license": "GPL-3.0",
