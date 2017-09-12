@@ -230,7 +230,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
         /* if (typeof c === 'function') {
             c = this.options.color(v)
         } */
-        const color = chroma(c(v).name()) // to be more flexible, a chroma color object is always created || TODO improve efficiency
+        const color = c(v) // to be more flexible, a chroma color object is always created || TODO improve efficiency
         return color
     }
 }
