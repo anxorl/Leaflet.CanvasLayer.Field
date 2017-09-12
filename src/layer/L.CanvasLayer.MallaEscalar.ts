@@ -131,7 +131,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
 
                 if (v !== null) {
                     z++
-                    const color = this._getColorFor(v)
+                    const color = this.options.color(v) // this._getColorFor(v)
                     const [R, G, B, A] = color.rgba()
                     for (let sx = 0; sx < step && sx + i < width; sx++) {
                         for (let sy = 0; sy < step && j + sy < height; sy++) {
@@ -225,12 +225,12 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
     /**
      * Gets a chroma color for a pixel value, according to 'options.color'
      */
-    private _getColorFor(v: number) {
-        const c = this.options.color // e.g. for a constant 'red'
-        /* if (typeof c === 'function') {
-            c = this.options.color(v)
+    /*     private _getColorFor(v: number) {
+            const c = this.options.color // e.g. for a constant 'red'
+            if (typeof c === 'function') {
+                c = this.options.color(v)
+            }
+            const color = c(v) // to be more flexible, a chroma color object is always created || TODO improve efficiency
+            return color
         } */
-        const color = c(v) // to be more flexible, a chroma color object is always created || TODO improve efficiency
-        return color
-    }
 }
