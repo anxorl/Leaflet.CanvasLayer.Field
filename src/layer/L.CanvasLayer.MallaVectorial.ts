@@ -70,7 +70,7 @@ export class CanvasLayerMallaVectorial extends CanvasLayerMalla<Vector> {
         const target = new LatLng(par.yt, par.xt)
 
         if (
-            viewInfo.layer._map &&
+            viewInfo.layer._map != null &&
             viewInfo.bounds.contains(source) &&
             par.age <= this.options.maxAge
         ) {
