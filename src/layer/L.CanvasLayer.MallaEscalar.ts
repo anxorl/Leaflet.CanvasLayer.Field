@@ -10,6 +10,7 @@ export interface ICanvasLayerMallaEscalarOptions extends ICanvasLayerMallaOption
     arrowColor?: string
     arrowDirection?: string,
     color?: Scale,
+    domain?: number[],
     pixelStep?: number,
     type?: string,
     vectorSize?: number
@@ -20,12 +21,13 @@ export interface ICanvasLayerMallaEscalarOptions extends ICanvasLayerMallaOption
  */
 export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
     protected _malla: MallaEscalar
-    protected _colorO: Scale = chroma.scale(ColorScale.scales('troposfera').colors).domain(this._malla.range)
+    protected _colorO: Scale
 
     protected options: ICanvasLayerMallaEscalarOptions = {
         arrowColor: 'grey',
         arrowDirection: 'from', // [from|towards]
         color: this._colorO, // function colorFor(value) [e.g. chromajs.scale],
+        domain: this._malla.range,
         interpolate: true, // Change to use interpolation
         pixelStep: 2,
         type: 'colormap', // [colormap|vector]
@@ -35,6 +37,8 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
     constructor(mallaEscalar: MallaEscalar, options?: ICanvasLayerMallaEscalarOptions) {
         super(mallaEscalar, options)
         Util.setOptions(this, options)
+
+        this.options.color = chroma.scale(ColorScale.scales('troposfera').colors).domain(this.options.domain)
     }
 
     /* eslint-disable no-unused-vars */

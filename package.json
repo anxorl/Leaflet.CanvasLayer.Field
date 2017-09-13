@@ -1,6 +1,6 @@
 {
   "name": "leaflet-grid",
-  "version": "1.0.22",
+  "version": "1.0.27",
   "description": "Show grid data in a map.",
   "main": "dist/leaflet-grid.js",
   "types": "dist/LeafletGrid.d.ts",
@@ -20,7 +20,7 @@
     "d3-timer": "^1.0.7",
     "geotiff": "^0.4.1",
     "leaflet": "^1.2.0",
-    "leaflet-canvas-layer": "^1.0.2"
+    "leaflet-canvas-layer": "^1.0.4"
   },
   "devDependencies": {
     "@types/chroma-js": "^1.3.1",
@@ -29,15 +29,15 @@
     "@types/d3-selection": "^1.1.0",
     "@types/d3-timer": "^1.0.6",
     "@types/leaflet": "^1.2.0",
-    "@types/node": "^8.0.26",
+    "@types/node": "^8.0.28",
     "@types/typescript": "^2.0.0",
     "awesome-typescript-loader": "^3.2.3",
     "extract-text-webpack-plugin": "^3.0.0",
-    "ts-loader": "^2.3.4",
+    "ts-loader": "^2.3.7",
     "tslint": "^5.7.0",
     "tslint-loader": "^3.5.3",
     "typescript": "^2.5.2",
-    "webpack": "^3.5.5",
+    "webpack": "^3.5.6",
     "webpack-build-notifier": "^0.1.16"
   },
   "repository": {
