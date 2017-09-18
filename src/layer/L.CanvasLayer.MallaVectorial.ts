@@ -3,7 +3,7 @@
  * Animated VectorField on canvas
  */
 import { interval, Timer } from 'd3-timer'
-import { LatLng, LayerOptions, Util } from 'leaflet'
+import { LatLng, Util } from 'leaflet'
 import { MallaVectorial } from '../grid/MallaVectorial'
 import { Vector } from '../grid/Vector'
 import { CanvasLayerMalla, ICanvasLayerMallaOptions } from './L.CanvasLayer.Malla'
@@ -32,7 +32,7 @@ export class CanvasLayerMallaVectorial extends CanvasLayerMalla<Vector> {
 
     private timer: Timer
 
-    constructor(vectorField: MallaVectorial, options?: LayerOptions) {
+    constructor(vectorField: MallaVectorial, options?: ICanvasLayerMallaVectorialOptions) {
         super(vectorField, options)
         Util.setOptions(this, options)
         this.timer = null
