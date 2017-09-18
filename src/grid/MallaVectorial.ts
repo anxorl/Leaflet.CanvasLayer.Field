@@ -206,8 +206,10 @@ export class MallaVectorial extends Malla<Vector> {
         return zs
     }
 
-    private _arraysTo2d(us: any, vs: any, nRows: number, nCols: number) {
+    // us and vs must to be same x y shape. TO DO: make this not dimension dependant or use mallaEscalar grid
+    private _arraysTo2d(us: any, vs: any, nRows: number, nCols: number, reverseX?: boolean, reverseY?: boolean) {
         const grid = []
+        let jIndex: number
         let p = 0
 
         for (let j = 0; j < nRows; j++) {
@@ -218,7 +220,8 @@ export class MallaVectorial extends Malla<Vector> {
                 const valid = this._isValid(u) && this._isValid(v)
                 row[i] = valid ? new Vector(u, v) : null // <<<
             }
-            grid[j] = row
+            jIndex = reverseY ? nRows - j : j
+            grid[jIndex] = reverseX ? row.reverse() : row
         }
         return grid
     }
