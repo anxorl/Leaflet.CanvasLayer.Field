@@ -4,7 +4,7 @@ import { IMallaParams, Malla } from './Malla'
 import { MallaEscalar } from './MallaEscalar'
 import { Vector } from './Vector'
 
-export interface IMallaVectorialParams extends IMallaParams {
+export interface IMallaVectorial extends IMallaParams {
     us: number[],
     vs: number[]
 }
@@ -75,7 +75,7 @@ export class MallaVectorial extends Malla<Vector> {
      * @param   {ScalarField} v
      * @returns {Object} - parameters to build VectorField
      */
-    public static _paramsFromScalarFields(u: MallaEscalar, v: MallaEscalar): IMallaVectorialParams {
+    public static _paramsFromScalarFields(u: MallaEscalar, v: MallaEscalar): IMallaVectorial {
         return {
             cellSize: u.cellSize,
             nCols: u.nCols,

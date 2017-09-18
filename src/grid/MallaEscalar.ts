@@ -7,7 +7,9 @@ import { IMallaParams, Malla } from './Malla'
 // tslint:disable-next-line:no-var-requires
 const GeoTIFF = require('geotiff')
 
-export interface IMallaEscalarParams extends IMallaParams {
+export interface IMallaEscalar extends IMallaParams {
+    reverseX?: boolean
+    reverseY?: boolean
     zs?: number[]
 }
 
@@ -20,7 +22,8 @@ export class MallaEscalar extends Malla<number> {
 
         const values: number[] = datos.map((it: any) => it[nomeVar])
 
-        const p: IMallaEscalarParams = def
+        const p: IMallaEscalar = def
+        p.reverseY = true
         p.zs = values
         return new MallaEscalar(p)
 
@@ -39,7 +42,7 @@ export class MallaEscalar extends Malla<number> {
         MallaEscalar._checkIsValidASCIIGridHeader(lines)
 
         const n = /-?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+\-]?\d+)?/ // any number
-        const p: IMallaEscalarParams = {
+        const p: IMallaEscalar = {
             cellSize: { x: parseFloat(lines[4].match(n).toString()), y: parseFloat(lines[4].match(n).toString()) },
             nCols: parseInt(lines[0].match(n).toString(), 10),
             nRows: parseInt(lines[1].match(n).toString(), 10),
@@ -139,10 +142,14 @@ export class MallaEscalar extends Malla<number> {
         }
     }
 
+    private reverseX: boolean
+    private reverseY: boolean
     private _zs: number[]
 
     constructor(params: any) {
         super(params)
+        this.reverseX = params.reverseX
+        this.reverseY = params.reverseY
         this._zs = params.zs
 
         this.grid = this._buildGrid()
@@ -167,7 +174,7 @@ export class MallaEscalar extends Malla<number> {
      * @returns {Array.<Array.<Number>>} - grid[row][column]--> Number
      */
     protected _buildGrid() {
-        const grid = this._arrayTo2d(this.zs, this.nRows, this.nCols)
+        const grid = this._arrayTo2d(this.zs, this.nRows, this.nCols, this.reverseX, this.reverseY)
         return grid
     }
 
@@ -201,8 +208,9 @@ export class MallaEscalar extends Malla<number> {
         return g00 * rx * ry + g10 * x * ry + g01 * rx * y + g11 * x * y
     }
 
-    private _arrayTo2d(array: any, nRows: number, nCols: number) {
+    private _arrayTo2d(array: any, nRows: number, nCols: number, reverseX?: boolean, reverseY?: boolean) {
         const grid = []
+        let jIndex: number
         let p = 0
         for (let j = 0; j < nRows; j++) {
             const row = []
@@ -210,7 +218,8 @@ export class MallaEscalar extends Malla<number> {
                 const z = array[p]
                 row[i] = this._isValid(z) ? z : null // <<<
             }
-            grid[j] = row
+            jIndex = reverseY ? nRows - j : j
+            grid[jIndex] = reverseX ? row.reverse() : row
         }
         return grid
     }
