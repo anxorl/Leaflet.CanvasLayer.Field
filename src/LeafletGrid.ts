@@ -1,3 +1,4 @@
+import { ColorScale } from './colorscale/L.ColorScale'
 import { ColorBar, IColorBarOptions } from './control/L.Control.ColorBar'
 import { Celda, ISizeCelda } from './grid/Celda'
 import { IMallaParams, Malla } from './grid/Malla'
@@ -23,3 +24,6 @@ export { CanvasLayerMalla, CanvasLayerMallaEscalar, CanvasLayerMallaVectorial, C
 export { IColorBarOptions }
 // Colorbar
 export { ColorBar }
+
+// Escalas de color
+export { ColorScale }

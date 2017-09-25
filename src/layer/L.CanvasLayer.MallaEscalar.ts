@@ -38,7 +38,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
         super(mallaEscalar, options)
         Util.setOptions(this, options)
 
-        this.options.color = chroma.scale(ColorScale.scales('troposfera').colors).domain(this.options.domain)
+        this.options.color = chroma.scale(ColorScale.getScale('troposfera').colors).domain(this.options.domain)
     }
 
     /* eslint-disable no-unused-vars */
@@ -58,6 +58,11 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
     }
     public setColor(f: Scale) {
         this.options.color = f
+        this.needRedraw()
+    }
+
+    public setColorScale(n: string) {
+        this.options.color = chroma.scale(ColorScale.getScale(n).colors).domain(this.options.domain)
         this.needRedraw()
     }
 

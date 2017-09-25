@@ -129,7 +129,7 @@ export class MallaVectorial extends Malla<Vector> {
      * @returns {Array.<Array.<Vector>>} - grid[row][column]--> Vector
      */
     protected _buildGrid(): Vector[][] {
-        const grid = this._arraysTo2d(this.us, this.vs, this.nRows, this.nCols)
+        const grid = this._arraysTo2d(this.us, this.vs, this.nRows, this.nCols, false, true)
         return grid
     }
 
@@ -220,7 +220,7 @@ export class MallaVectorial extends Malla<Vector> {
                 const valid = this._isValid(u) && this._isValid(v)
                 row[i] = valid ? new Vector(u, v) : null // <<<
             }
-            jIndex = reverseY ? nRows - j : j
+            jIndex = reverseY ? (nRows - 1) - j : j
             grid[jIndex] = reverseX ? row.reverse() : row
         }
         return grid

@@ -218,7 +218,7 @@ export class MallaEscalar extends Malla<number> {
                 const z = array[p]
                 row[i] = this._isValid(z) ? z : null // <<<
             }
-            jIndex = reverseY ? nRows - j : j
+            jIndex = reverseY ? (nRows - 1) - j : j
             grid[jIndex] = reverseX ? row.reverse() : row
         }
         return grid

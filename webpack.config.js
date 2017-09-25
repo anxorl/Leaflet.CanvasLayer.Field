@@ -53,11 +53,11 @@ module.exports = {
       title: "Construcción visorMallas"
     }), */
     new ExtractTextPlugin('visor-mallas.css'),
-    new webpack.optimize.UglifyJsPlugin({
+    /* new webpack.optimize.UglifyJsPlugin({
       mangle: {
         keep_fnames: true
       }
-    })
+    }) */
   ],
   watchOptions: {
     ignored: '/node_modules/',
