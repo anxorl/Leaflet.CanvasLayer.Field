@@ -3,12 +3,12 @@
  * (ScalarField or a VectorField)
  */
 import { DomUtil, LatLng, LatLngBounds, LayerOptions, LeafletEventHandlerFn, LeafletMouseEvent, Util } from 'leaflet'
-import { CanvasLayer } from 'leaflet-canvas-layer'
-import { Malla } from '../grid/Malla'
+import { CanvasLayer, IViewInfo } from 'leaflet-canvas-layer'
+import { Grid } from '../grid/Grid'
 import { Vector } from '../grid/Vector'
 
-export interface ICanvasLayerMallaOptions extends LayerOptions {
-    inFilter?: any
+export interface ICanvasLayerGridOptions extends LayerOptions {
+    inFilter?: (e: number | Vector) => boolean
     interpolate?: boolean
     mouseMoveCursor?: { [x: string]: string }
     onClick?: LeafletEventHandlerFn
@@ -16,11 +16,11 @@ export interface ICanvasLayerMallaOptions extends LayerOptions {
     opacity?: number
 }
 
-export abstract class CanvasLayerMalla<T extends number | Vector> extends CanvasLayer {
+export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasLayer {
 
-    protected _inFilterO: any
+    protected _inFilterO: (e: number | Vector) => boolean
 
-    protected options: ICanvasLayerMallaOptions = {
+    protected options: ICanvasLayerGridOptions = {
         inFilter: this._inFilterO,
         mouseMoveCursor: {
             noValue: 'default',
@@ -31,10 +31,10 @@ export abstract class CanvasLayerMalla<T extends number | Vector> extends Canvas
         opacity: 1
     }
 
-    protected _malla: Malla<T>
+    protected _malla: Grid<T>
     protected _visible: boolean
 
-    constructor(malla: Malla<T>, options?: LayerOptions) {
+    constructor(malla: Grid<T>, options?: LayerOptions) {
         super(options)
         Util.setOptions(this, options)
         this._visible = true
@@ -42,10 +42,10 @@ export abstract class CanvasLayerMalla<T extends number | Vector> extends Canvas
     }
 
     /* eslint-disable no-unused-vars */
-    public abstract onDrawLayer(viewInfo: any): any
+    public abstract onDrawLayer(viewInfo: IViewInfo): void
     /* eslint-enable no-unused-vars */
 
-    public getEvents(): any {
+    public getEvents(): { [x: string]: LeafletEventHandlerFn } {
         const events = super.getEvents()
         return events
     }
@@ -59,14 +59,14 @@ export abstract class CanvasLayerMalla<T extends number | Vector> extends Canvas
         return this._visible
     }
 
-    public setData(malla: Malla<T>) {
+    public setData(malla: Grid<T>) {
         malla.setFilter(this.options.inFilter)
         this._malla = malla
         this.needRedraw()
         this.fire('load')
     }
 
-    public setFilter(f: any) {
+    public setFilter(f: (e: number | Vector) => boolean) {
         this.options.inFilter = f
         this._malla.setFilter(f)
         this.needRedraw()
@@ -126,12 +126,12 @@ export abstract class CanvasLayerMalla<T extends number | Vector> extends Canvas
     }
 
     protected _onClick(e: LeafletMouseEvent) {
-        const v = this._queryValue(e)
+        const v = this._queryValue(e.latlng)
         this.fire('click', v)
     }
 
     protected _onMouseMove(e: LeafletMouseEvent) {
-        const v = this._queryValue(e)
+        const v = this._queryValue(e.latlng)
         this._changeCursorOn(v)
         this.fire('mousemove', v)
     }
@@ -177,14 +177,14 @@ export abstract class CanvasLayerMalla<T extends number | Vector> extends Canvas
         style.cursor = v.value !== null ? value : noValue
     }
 
-    private _queryValue(e: any): { latlng: LatLng, value: number | Vector } {
+    private _queryValue(ll: LatLng): { latlng: LatLng, value: number | Vector } {
         const v = this._malla
             ? (this.options.interpolate
-                ? this._malla.interpolatedValueAt(e.latlng.lng, e.latlng.lat)
-                : this._malla.valueAt(e.latlng.lng, e.latlng.lat))
+                ? this._malla.interpolatedValueAt(ll.lng, ll.lat)
+                : this._malla.valueAt(ll.lng, ll.lat))
             : null
         const result = {
-            latlng: e.latlng,
+            latlng: ll,
             value: v
         }
         return result

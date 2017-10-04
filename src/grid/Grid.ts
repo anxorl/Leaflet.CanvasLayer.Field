@@ -1,9 +1,9 @@
 import { LatLng, LatLngBounds } from 'leaflet'
-import { Celda, ISizeCelda } from './Celda'
+import { Cell, ISizeCell } from './Cell'
 import { Vector } from './Vector'
 
-export interface IMallaParams {
-    cellSize: ISizeCelda,
+export interface IGridParams {
+    cellSize: ISizeCell,
     nCols: number,
     nRows: number,
     xllCorner: number,
@@ -14,16 +14,16 @@ export interface IMallaParams {
  *  Abstract class for a set of values (Vector | Scalar)
  *  assigned to a regular 2D-grid (lon-lat), aka 'a Raster source'
  */
-export abstract class Malla<T extends number | Vector> {
+export abstract class Grid<T extends number | Vector> {
     public isContinuous: boolean
-    public longitudeNeedsToBeWrapped: any
-    public _inFilter: any
+    public longitudeNeedsToBeWrapped: boolean
+    public _inFilter: (e: number | Vector) => boolean
 
     protected grid: T[][]
-    protected defMalla: IMallaParams
-    protected _range: any
+    protected defMalla: IGridParams
+    protected _range: number[]
 
-    constructor(params: IMallaParams) {
+    constructor(params: IGridParams) {
         this.defMalla = params
 
         this.grid = null // to be defined by subclasses
@@ -64,14 +64,14 @@ export abstract class Malla<T extends number | Vector> {
      * A list with every cell
      * @returns {Array<Cell>} - cells (x-ascending & y-descending order)
      */
-    public getCells(stride = 1): Array<Celda<number | Vector>> {
-        const cells: Array<Celda<T>> = []
+    public getCells(stride = 1): Array<Cell<number | Vector>> {
+        const cells: Array<Cell<T>> = []
         for (let j = 0; j < this.defMalla.nRows; j = j + stride) {
             for (let i = 0; i < this.defMalla.nCols; i = i + stride) {
                 const [lon, lat] = this.lonLatAtIndexes(i, j)
                 const center = new LatLng(lat, lon)
                 const value = this._valueAtIndexes(i, j)
-                const c = new Celda<T>(center, value, this.defMalla.cellSize)
+                const c = new Cell<T>(center, value, this.defMalla.cellSize)
                 cells.push(c) // <<
             }
         }
@@ -82,7 +82,7 @@ export abstract class Malla<T extends number | Vector> {
      * Apply a filter function to field values
      * @param   {Function} f - boolean function
      */
-    public setFilter(f: any): void {
+    public setFilter(f: (e: number | Vector) => boolean): void {
         this._inFilter = f
         this._updateRange()
     }
@@ -206,7 +206,7 @@ export abstract class Malla<T extends number | Vector> {
      * @param {Object} [o] - an object (eg. a particle)
      * @returns {{x: Number, y: Number}} - object with x, y (lon, lat)
      */
-    public randomPosition(o?: any): { x: number, y: number } {
+    public randomPosition(o?: { x: number, y: number }): { x: number, y: number } {
         const i = (Math.random() * this.defMalla.nCols) || 0
         const j = (Math.random() * this.defMalla.nRows) || 0
         const res: { x: number, y: number } = { x: 0, y: 0 }

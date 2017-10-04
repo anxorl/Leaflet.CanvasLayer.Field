@@ -1,12 +1,12 @@
 import * as chroma from 'chroma-js'
 import { Bounds, bounds, LatLng, Util } from 'leaflet'
 import { ColorScale } from '../colorscale/L.ColorScale'
-import { Celda } from '../grid/Celda'
-import { MallaEscalar } from '../grid/MallaEscalar'
-import { CanvasLayerMalla, ICanvasLayerMallaOptions } from './L.CanvasLayer.Malla'
+import { Cell } from '../grid/Cell'
+import { MallaEscalar } from '../grid/ScalarGrid'
+import { CanvasLayerGrid, ICanvasLayerGridOptions } from './L.CanvasLayer.Grid'
 import Scale = chroma.Scale
 
-export interface ICanvasLayerMallaEscalarOptions extends ICanvasLayerMallaOptions {
+export interface ICanvasLayerScalarGridOptions extends ICanvasLayerGridOptions {
     arrowColor?: string
     arrowDirection?: string,
     color?: Scale,
@@ -19,22 +19,22 @@ export interface ICanvasLayerMallaEscalarOptions extends ICanvasLayerMallaOption
 /**
  * ScalarField on canvas (a 'Raster')
  */
-export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
+export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
     protected _malla: MallaEscalar
     protected _colorO: Scale
 
-    protected options: ICanvasLayerMallaEscalarOptions = {
+    protected options: ICanvasLayerScalarGridOptions = {
         arrowColor: 'grey',
         arrowDirection: 'from', // [from|towards]
-        color: this._colorO, // function colorFor(value) [e.g. chromajs.scale],
+        color: this._colorO,
         domain: this._malla.range,
         interpolate: true, // Change to use interpolation
-        pixelStep: 2,
+        pixelStep: 2, // Draw pixelStep pixels at once with the same color
         type: 'colormap', // [colormap|vector]
         vectorSize: 20 // only used if 'vector'
     }
 
-    constructor(mallaEscalar: MallaEscalar, options?: ICanvasLayerMallaEscalarOptions) {
+    constructor(mallaEscalar: MallaEscalar, options?: ICanvasLayerScalarGridOptions) {
         super(mallaEscalar, options)
         Util.setOptions(this, options)
 
@@ -61,8 +61,14 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
         this.needRedraw()
     }
 
-    public setColorScale(n: string) {
-        this.options.color = chroma.scale(ColorScale.getScale(n).colors).domain(this.options.domain)
+    public setColorScale(nome: string, classes?: number | number[]) {
+        this.options.color = chroma.scale(ColorScale.getScale(nome).colors).domain(this.options.domain)
+        if (classes) { this.options.color.classes(classes) }
+        this.needRedraw()
+    }
+
+    public setColorClasses(n: number) {
+        this.options.color.classes(n)
         this.needRedraw()
     }
 
@@ -121,11 +127,11 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
      * Prepares the image in data, as array with RGBAs
      * [R1, G1, B1, A1, R2, G2, B2, A2...]
      * @private
-     * @param {[[Type]]} data   [[Description]]
-     * @param {Numver} width
+     * @param {[[Type]]} data   [[RGBA vector]]
+     * @param {Number} width
      * @param {Number} height
      */
-    private _prepareImageIn(data: any, width: number, height: number) {
+    private _prepareImageIn(data: Uint8ClampedArray, width: number, height: number) {
         const step = this.options.pixelStep
         let z = 0
         for (let j = 0; j < height; j += step) {
@@ -148,7 +154,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
                             data[pos] = R
                             data[pos + 1] = G
                             data[pos + 2] = B
-                            data[pos + 3] = (A * 255).toFixed(0) // not percent in alpha but hex 0-255
+                            data[pos + 3] = Math.floor(A * 255) // not percent in alpha but hex 0-255
                         }
                     }
                 }
@@ -182,7 +188,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
                 const v = this._malla.valueAt(lon, lat)
                 const center = new LatLng(lat, lon)
                 if (v !== null && currentBounds.contains(center)) {
-                    const celda = new Celda(center, v, this._malla.cellSize)
+                    const celda = new Cell(center, v, this._malla.cellSize)
                     this._drawArrow(celda, ctx)
                 }
             }
@@ -201,7 +207,7 @@ export class CanvasLayerMallaEscalar extends CanvasLayerMalla<number> {
         return pixelBounds
     }
 
-    private _drawArrow(celda: Celda<number>, ctx: CanvasRenderingContext2D) {
+    private _drawArrow(celda: Cell<number>, ctx: CanvasRenderingContext2D) {
         const projected = this._map.latLngToContainerPoint(celda.center)
 
         // colormap vs. simple color

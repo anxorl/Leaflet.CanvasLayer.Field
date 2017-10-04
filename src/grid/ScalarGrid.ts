@@ -1,13 +1,10 @@
-// tslint:disable-next-line:no-reference
-// <reference path='../geotiff/geotiff.d.ts'/>
-
 import { max, min } from 'd3-array'
-import { IMallaParams, Malla } from './Malla'
+import { Grid, IGridParams } from './Grid'
 
 // tslint:disable-next-line:no-var-requires
 const GeoTIFF = require('geotiff')
 
-export interface IMallaEscalar extends IMallaParams {
+export interface IMallaEscalar extends IGridParams {
     reverseX?: boolean
     reverseY?: boolean
     zs?: number[]
@@ -16,11 +13,11 @@ export interface IMallaEscalar extends IMallaParams {
 /**
  * Scalar Field
  */
-export class MallaEscalar extends Malla<number> {
+export class MallaEscalar extends Grid<number> {
 
-    public static fromData(def: IMallaParams, datos: any, nomeVar: string = 'c'): MallaEscalar {
+    public static fromData(def: IGridParams, datos: Array<{ [x: string]: number }>, nomeVar: string = 'c'): MallaEscalar {
 
-        const values: number[] = datos.map((it: any) => it[nomeVar])
+        const values: number[] = datos.map((it: { [x: string]: number }) => it[nomeVar])
 
         const p: IMallaEscalar = def
         p.reverseY = true
@@ -146,7 +143,7 @@ export class MallaEscalar extends Malla<number> {
     private reverseY: boolean
     private _zs: number[]
 
-    constructor(params: any) {
+    constructor(params: IMallaEscalar) {
         super(params)
         this.reverseX = params.reverseX
         this.reverseY = params.reverseY
@@ -154,13 +151,12 @@ export class MallaEscalar extends Malla<number> {
 
         this.grid = this._buildGrid()
         this._updateRange()
-        // console.log(`ScalarField created (${this.nCols} x ${this.nRows})`)
     }
 
     public get zs() { return this._zs }
 
-    public updateData(datos: any, nomeVar: string) {
-        const values: number[] = datos.map((it: any) => it[nomeVar])
+    public updateData(datos: Array<{ [x: string]: number }>, nomeVar: string = 'c') {
+        const values: number[] = datos.map((it: { [x: string]: number }) => it[nomeVar])
         this._zs = values
         this.grid = this._buildGrid()
         this._updateRange()
@@ -208,7 +204,7 @@ export class MallaEscalar extends Malla<number> {
         return g00 * rx * ry + g10 * x * ry + g01 * rx * y + g11 * x * y
     }
 
-    private _arrayTo2d(array: any, nRows: number, nCols: number, reverseX?: boolean, reverseY?: boolean) {
+    private _arrayTo2d(array: number[], nRows: number, nCols: number, reverseX?: boolean, reverseY?: boolean) {
         const grid = []
         let jIndex: number
         let p = 0

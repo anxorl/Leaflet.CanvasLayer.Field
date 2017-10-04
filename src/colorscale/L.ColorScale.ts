@@ -5,36 +5,51 @@
  */
 import { Class, Util } from 'leaflet'
 
+export interface IScaleDefinition {
+    colors: string[]
+    positions?: number[]
+}
+
+export interface IColorScaleOptions {
+    clampHigh?: boolean
+    clampLow: boolean
+    domain: number[]
+    height: number /* 1 is enough to get an array of colours */
+    width: number /* nº of steps = width */
+}
+
 export class ColorScale extends Class {
 
-    public static buildFullDefinition(defTemp: string | string[]) {
+    public static buildFullDefinition(defTemp: IScaleDefinition): IScaleDefinition {
         // Allows conversion from definition = ['color1', 'color2'...] to definition = {colors: ['color1', 'color2']}
-        let def: { colors: string[], positions?: number[] }
-        (Array.isArray(defTemp)) ? def.colors = defTemp : def = ColorScale.getScale(defTemp)
+        let def: IScaleDefinition
+        (defTemp.colors.length > 0) ? def.colors = defTemp.colors : def = ColorScale.getScale(defTemp.colors[0])
 
         // There are colors, but no positions (equally interval is assumed).
-        const number = def.colors.length
-        const delta = 1.0 / (number - 1)
-        const pos = []
-        let p = 0
-        do {
-            pos.push(p)
-            p = p + delta
-        } while (p <= 1.0)
-        def.positions = pos
+        if (!def.positions) {
+            const number = def.colors.length
+            const delta = 1.0 / (number - 1)
+            const pos = []
+            let p = 0
+            do {
+                pos.push(p)
+                p = p + delta
+            } while (p <= 1.0)
+            def.positions = pos
+        }
 
         return def
     }
 
-    public static getScale(name: string) {
+    public static getScale(name: string): IScaleDefinition {
         return ColorScale.scales[name.toLowerCase()]
     }
 
-    public static getScales() {
+    public static getScales(): string[] {
         return Object.keys(ColorScale.scales)
     }
 
-    public static rgbToHex(r: number, g: number, b: number) {
+    public static rgbToHex(r: number, g: number, b: number): string {
         const rgb = [r, g, b]
 
         function _componentToHex(c: number) {
@@ -45,7 +60,7 @@ export class ColorScale extends Class {
         return '#' + rgb.map(_componentToHex).join('')
     }
 
-    public static hexToRgb(hexWithPrefix: string) {
+    public static hexToRgb(hexWithPrefix: string): number[] {
         const hex = hexWithPrefix.slice(1)
         const arrBuff = new ArrayBuffer(4)
         const vw = new DataView(arrBuff)
@@ -58,7 +73,7 @@ export class ColorScale extends Class {
         return [r, g, b]
     }
 
-    private static scales: { [n: string]: { colors: string[], positions?: number[] } } = {
+    private static scales: { [n: string]: IScaleDefinition } = {
         autumn: {
             colors: ['#ff0000', '#ffff00'],
             positions: [0, 1]
@@ -169,19 +184,19 @@ export class ColorScale extends Class {
         },
     }
 
-    private canvas: any
-    private csImageData: any
-    private definition: any
+    private canvas: HTMLCanvasElement
+    private csImageData: Uint8ClampedArray
+    private definition: IScaleDefinition
 
-    private options: { [x: string]: any } = {
+    private options: IColorScaleOptions = {
         clampHigh: false,
         clampLow: false,
         domain: [0, 1],
-        height: 1, /* 1 is enough to get an array of colours */
-        width: 256, /* nº of steps = width */
+        height: 1,
+        width: 256,
     }
 
-    constructor(definition: string | string[], options?: any) {
+    constructor(definition: IScaleDefinition, options?: IColorScaleOptions) {
         super()
         Util.setOptions(this, options)
 
@@ -224,7 +239,7 @@ export class ColorScale extends Class {
         return [R, G, B, A]
     }
 
-    public flip() {
+    public flip(): ColorScale {
         const newDefinition = { ...{}, ...this.definition }
         newDefinition.colors = this.definition.colors.reverse() // << flip color order from original
 
@@ -232,7 +247,7 @@ export class ColorScale extends Class {
         return flipped
     }
 
-    private _prepareScale() {
+    private _prepareScale(): void {
         const c = this._createCanvas()
         const ctx = c.getContext('2d')
         this._createGradientIn(ctx)
@@ -241,14 +256,14 @@ export class ColorScale extends Class {
         this.csImageData = ctx.getImageData(0, 0, this.options.width, 1).data
     }
 
-    private _createCanvas() {
-        const c = document.createElement('canvas')
+    private _createCanvas(): HTMLCanvasElement {
+        const c = new HTMLCanvasElement()
         c.width = this.options.width
         c.height = this.options.height
         return c
     }
 
-    private _createGradientIn(ctx: CanvasRenderingContext2D) {
+    private _createGradientIn(ctx: CanvasRenderingContext2D): void {
         const g = ctx.createLinearGradient(0, 0, this.options.width, 0)
 
         // draw linear gradient with colors and stops from definition

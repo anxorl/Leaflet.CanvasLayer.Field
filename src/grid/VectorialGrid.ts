@@ -1,10 +1,10 @@
 import { max, min } from 'd3-array'
-import { Celda } from './Celda'
-import { IMallaParams, Malla } from './Malla'
-import { MallaEscalar } from './MallaEscalar'
+import { Cell } from './Cell'
+import { Grid, IGridParams } from './Grid'
+import { MallaEscalar } from './ScalarGrid'
 import { Vector } from './Vector'
 
-export interface IMallaVectorial extends IMallaParams {
+export interface IMallaVectorial extends IGridParams {
     us: number[],
     vs: number[]
 }
@@ -13,14 +13,14 @@ export interface IMallaVectorial extends IMallaParams {
  *  A set of vectors assigned to a regular 2D-grid (lon-lat)
  *  (e.g. a raster representing winds for a region)
  */
-export class MallaVectorial extends Malla<Vector> {
+export class MallaVectorial extends Grid<Vector> {
 
-    /* public static fromData(def: IMallaParams, datos: any): MallaVectorial {
-        let U = MallaEscalar.fromData(def, datos)
-        const p = MallaVectorial._paramsFromScalarFields(U, V)
-        return new MallaVectorial(p)
-    } */
-
+    /**
+     * Creates a VectorField from the content of two ScalarField files
+     * @param   {MallaEscalar} U - with u-component
+     * @param   {MallaEscalar} V - with v-component
+     * @returns {VectorField}
+     */
     public static fromMallas(U: MallaEscalar, V: MallaEscalar): MallaVectorial {
         const p = MallaVectorial._paramsFromScalarFields(U, V)
         return new MallaVectorial(p)
@@ -87,14 +87,14 @@ export class MallaVectorial extends Malla<Vector> {
         }
     }
 
-    protected grid: any[][]
+    protected grid: Vector[][]
     protected _range: number[]
-    protected defMalla: any
+    protected defMalla: IGridParams
 
-    private vs: any
-    private us: any
+    private vs: number[]
+    private us: number[]
 
-    constructor(params: any) {
+    constructor(params: IMallaVectorial) {
         super(params)
 
         this.us = params.us
@@ -140,7 +140,7 @@ export class MallaVectorial extends Malla<Vector> {
      */
     protected _calculateRange(): number[] {
         // TODO make a clearer method for getting these vectors...
-        let vectors = (this.getCells() as Array<Celda<Vector>>)
+        let vectors = (this.getCells() as Array<Cell<Vector>>)
             .map<Vector>((pt) => pt.value)
             .filter((v: Vector) => v !== null)
 
@@ -207,7 +207,7 @@ export class MallaVectorial extends Malla<Vector> {
     }
 
     // us and vs must to be same x y shape. TO DO: make this not dimension dependant or use mallaEscalar grid
-    private _arraysTo2d(us: any, vs: any, nRows: number, nCols: number, reverseX?: boolean, reverseY?: boolean) {
+    private _arraysTo2d(us: number[], vs: number[], nRows: number, nCols: number, reverseX?: boolean, reverseY?: boolean) {
         const grid = []
         let jIndex: number
         let p = 0

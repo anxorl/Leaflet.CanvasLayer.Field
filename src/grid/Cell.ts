@@ -4,15 +4,15 @@
 import { LatLng, latLng, latLngBounds, LatLngBounds } from 'leaflet'
 import { Vector } from './Vector'
 
-export interface ISizeCelda {
+export interface ISizeCell {
     x: number,
     y: number
 }
 
-export class Celda<T extends number | Vector> {
+export class Cell<T extends number | Vector> {
 
     private _center: LatLng
-    private _size: ISizeCelda
+    private _size: ISizeCell
     private _value: T
 
     /**
@@ -21,7 +21,7 @@ export class Celda<T extends number | Vector> {
      * @param {Number} value
      * @param {Number} size
      */
-    constructor(center: LatLng, value: T, size: ISizeCelda) {
+    constructor(center: LatLng, value: T, size: ISizeCell) {
         this._center = center
         this._value = value
         this._size = size
@@ -32,7 +32,7 @@ export class Celda<T extends number | Vector> {
     public get value(): T { return this._value }
     public set value(value: T) { this._value = value }
 
-    public equals(anotherCell: Celda<T>) {
+    public equals(anotherCell: Cell<T>) {
         return (this.center.equals(anotherCell.center) &&
             this._equalValues(this.value, anotherCell.value) &&
             this._size === anotherCell._size

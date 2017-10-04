@@ -4,11 +4,12 @@
  */
 import { interval, Timer } from 'd3-timer'
 import { LatLng, Util } from 'leaflet'
-import { MallaVectorial } from '../grid/MallaVectorial'
+import { IViewInfo } from 'leaflet-canvas-layer'
 import { Vector } from '../grid/Vector'
-import { CanvasLayerMalla, ICanvasLayerMallaOptions } from './L.CanvasLayer.Malla'
+import { MallaVectorial } from '../grid/VectorialGrid'
+import { CanvasLayerGrid, ICanvasLayerGridOptions } from './L.CanvasLayer.Grid'
 
-export interface ICanvasLayerMallaVectorialOptions extends ICanvasLayerMallaOptions {
+export interface ICanvasLayerMallaVectorialOptions extends ICanvasLayerGridOptions {
     color?: string
     duration?: number
     fade?: number
@@ -18,7 +19,7 @@ export interface ICanvasLayerMallaVectorialOptions extends ICanvasLayerMallaOpti
     width?: number
 }
 
-export class CanvasLayerMallaVectorial extends CanvasLayerMalla<Vector> {
+export class CanvasLayerMallaVectorial extends CanvasLayerGrid<Vector> {
 
     protected options: ICanvasLayerMallaVectorialOptions = {
         color: 'grey', // html-color | function colorFor(value) [e.g. chromajs.scale]
@@ -38,7 +39,7 @@ export class CanvasLayerMallaVectorial extends CanvasLayerMalla<Vector> {
         this.timer = null
     }
 
-    public onDrawLayer(viewInfo: any) {
+    public onDrawLayer(viewInfo: IViewInfo) {
         if (!this._malla || !this.isVisible()) { return }
 
         this._updateOpacity()
@@ -65,17 +66,19 @@ export class CanvasLayerMallaVectorial extends CanvasLayerMalla<Vector> {
         super._hideCanvas()
     }
 
-    private _drawParticle(viewInfo: any, ctx: CanvasRenderingContext2D, par: any) {
+    private _drawParticle(viewInfo: IViewInfo, ctx: CanvasRenderingContext2D, par: {
+        x: number, y: number, [z: string]: number
+    }) {
         const source = new LatLng(par.y, par.x)
         const target = new LatLng(par.yt, par.xt)
 
         if (
-            viewInfo.layer._map != null &&
+            this._map != null &&
             viewInfo.bounds.contains(source) &&
             par.age <= this.options.maxAge
         ) {
-            const pA = viewInfo.layer._map.latLngToContainerPoint(source)
-            const pB = viewInfo.layer._map.latLngToContainerPoint(target)
+            const pA = this._map.latLngToContainerPoint(source)
+            const pB = this._map.latLngToContainerPoint(target)
 
             ctx.beginPath()
             ctx.moveTo(pA.x, pA.y)
@@ -104,7 +107,9 @@ export class CanvasLayerMallaVectorial extends CanvasLayerMalla<Vector> {
         const paths = []
 
         for (let i = 0; i < this.options.paths; i++) {
-            const p: { [x: string]: number } = this._malla.randomPosition()
+            const p: {
+                x: number, y: number, [z: string]: number
+            } = this._malla.randomPosition()
             p.age = this._randomAge()
             paths.push(p)
         }
@@ -119,7 +124,7 @@ export class CanvasLayerMallaVectorial extends CanvasLayerMalla<Vector> {
      * Builds the paths, adding 'particles' on each animation step, considering
      * their properties (age / position source > target)
      */
-    private _moveParticles(paths: Array<{ [x: string]: number }>) {
+    private _moveParticles(paths: Array<{ x: number, y: number, [x: string]: number }>) {
         // const screenFactor = 1 / this._map.getZoom() // consider using a 'screenFactor' to ponderate velocityScale
         paths.forEach((par) => {
             if (par.age > this.options.maxAge) {
@@ -152,7 +157,7 @@ export class CanvasLayerMallaVectorial extends CanvasLayerMalla<Vector> {
     /**
      * Draws the paths on each step
      */
-    private _drawParticles(ctx: CanvasRenderingContext2D, paths: Array<{ [x: string]: number }>, viewInfo: any) {
+    private _drawParticles(ctx: CanvasRenderingContext2D, paths: Array<{ x: number, y: number, [z: string]: number }>, viewInfo: IViewInfo) {
         // Previous paths...
         const prev = ctx.globalCompositeOperation
         ctx.globalCompositeOperation = 'destination-in'

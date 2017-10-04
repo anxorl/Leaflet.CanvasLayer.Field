@@ -4,10 +4,10 @@
  *  TODO rename to SimplePoint?
  */
 import { LatLng, LatLngBounds, LayerOptions } from 'leaflet'
-import { CanvasLayer } from 'leaflet-canvas-layer'
+import { CanvasLayer, IViewInfo } from 'leaflet-canvas-layer'
 
 export class CanvasLayerPuntosMalla extends CanvasLayer {
-    private points: any
+    private points: LatLng[]
     private options = {
         color: 'gray'
     }
@@ -21,14 +21,14 @@ export class CanvasLayerPuntosMalla extends CanvasLayer {
         this.needRedraw() // -- call to drawLayer
     }
 
-    public onDrawLayer(viewInfo: any) {
+    public onDrawLayer(viewInfo: IViewInfo) {
         // canvas preparation
         const g = viewInfo.canvas.getContext('2d')
         g.clearRect(0, 0, viewInfo.canvas.width, viewInfo.canvas.height)
         g.fillStyle = this.options.color
 
         for (const point of this.points) {
-            const p = viewInfo.layer._map.latLngToContainerPoint(point)
+            const p = this._map.latLngToContainerPoint(point)
             g.beginPath()
             // g.arc(p.x, p.y, 1, 0, Math.PI * 2); // circle | TODO style 'function' as parameter?
             g.fillRect(p.x, p.y, 2, 2) // simple point

@@ -11,7 +11,7 @@ const PATHS = {
 module.exports = {
 
   entry: {
-    "leaflet-grid": PATHS.src + '/LeafletGrid.ts',
+    "leaflet-canvas-grid": PATHS.src + '/LeafletCanvasGrid.ts',
   },
   output: {
     path: PATHS.dist,
@@ -52,12 +52,14 @@ module.exports = {
     /* new WebpackBuildNotifierPlugin({
       title: "Construcción visorMallas"
     }), */
-    new ExtractTextPlugin('visor-mallas.css'),
-    /* new webpack.optimize.UglifyJsPlugin({
+    new webpack.optimize.UglifyJsPlugin({
       mangle: {
         keep_fnames: true
+      },
+      output: {
+        comments: false
       }
-    }) */
+    })
   ],
   watchOptions: {
     ignored: '/node_modules/',
