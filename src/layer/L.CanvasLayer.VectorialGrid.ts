@@ -6,10 +6,10 @@ import { interval, Timer } from 'd3-timer'
 import { LatLng, Util } from 'leaflet'
 import { IViewInfo } from 'leaflet-canvas-layer'
 import { Vector } from '../grid/Vector'
-import { MallaVectorial } from '../grid/VectorialGrid'
+import { VectorialGrid } from '../grid/VectorialGrid'
 import { CanvasLayerGrid, ICanvasLayerGridOptions } from './L.CanvasLayer.Grid'
 
-export interface ICanvasLayerMallaVectorialOptions extends ICanvasLayerGridOptions {
+export interface ICanvasLayerVectorialGridOptions extends ICanvasLayerGridOptions {
     color?: string
     duration?: number
     fade?: number
@@ -19,9 +19,9 @@ export interface ICanvasLayerMallaVectorialOptions extends ICanvasLayerGridOptio
     width?: number
 }
 
-export class CanvasLayerMallaVectorial extends CanvasLayerGrid<Vector> {
+export class CanvasLayerVectorialGrid extends CanvasLayerGrid<Vector> {
 
-    protected options: ICanvasLayerMallaVectorialOptions = {
+    protected options: ICanvasLayerVectorialGridOptions = {
         color: 'grey', // html-color | function colorFor(value) [e.g. chromajs.scale]
         duration: 40, // milliseconds per 'frame'
         fade: .97, // 0 to 1
@@ -33,14 +33,14 @@ export class CanvasLayerMallaVectorial extends CanvasLayerGrid<Vector> {
 
     private timer: Timer
 
-    constructor(vectorField: MallaVectorial, options?: ICanvasLayerMallaVectorialOptions) {
+    constructor(vectorField: VectorialGrid, options?: ICanvasLayerVectorialGridOptions) {
         super(vectorField, options)
         Util.setOptions(this, options)
         this.timer = null
     }
 
     public onDrawLayer(viewInfo: IViewInfo) {
-        if (!this._malla || !this.isVisible()) { return }
+        if (!this._grid || !this.isVisible()) { return }
 
         this._updateOpacity()
 
@@ -109,7 +109,7 @@ export class CanvasLayerMallaVectorial extends CanvasLayerGrid<Vector> {
         for (let i = 0; i < this.options.paths; i++) {
             const p: {
                 x: number, y: number, [z: string]: number
-            } = this._malla.randomPosition()
+            } = this._grid.randomPosition()
             p.age = this._randomAge()
             paths.push(p)
         }
@@ -130,10 +130,10 @@ export class CanvasLayerMallaVectorial extends CanvasLayerGrid<Vector> {
             if (par.age > this.options.maxAge) {
                 // restart, on a random x,y
                 par.age = 0
-                this._malla.randomPosition(par)
+                this._grid.randomPosition(par)
             }
 
-            const vector = this._malla.valueAt(par.x, par.y)
+            const vector = this._grid.valueAt(par.x, par.y)
             if (vector === null) {
                 par.age = this.options.maxAge
             } else {
@@ -141,7 +141,7 @@ export class CanvasLayerMallaVectorial extends CanvasLayerGrid<Vector> {
                 const xt = par.x + vector.u * this.options.velocityScale // * screenFactor
                 const yt = par.y + vector.v * this.options.velocityScale // * screenFactor
 
-                if (this._malla.hasValueAt(xt, yt)) {
+                if (this._grid.hasValueAt(xt, yt)) {
                     par.xt = xt
                     par.yt = yt
                     par.m = vector.magnitude()

@@ -6,7 +6,7 @@
 import { LatLng, LatLngBounds, LayerOptions } from 'leaflet'
 import { CanvasLayer, IViewInfo } from 'leaflet-canvas-layer'
 
-export class CanvasLayerPuntosMalla extends CanvasLayer {
+export class CanvasLayerPointsGrid extends CanvasLayer {
     private points: LatLng[]
     private options = {
         color: 'gray'

@@ -2,7 +2,7 @@ import * as chroma from 'chroma-js'
 import { Bounds, bounds, LatLng, Util } from 'leaflet'
 import { ColorScale } from '../colorscale/L.ColorScale'
 import { Cell } from '../grid/Cell'
-import { MallaEscalar } from '../grid/ScalarGrid'
+import { ScalarGrid } from '../grid/ScalarGrid'
 import { CanvasLayerGrid, ICanvasLayerGridOptions } from './L.CanvasLayer.Grid'
 import Scale = chroma.Scale
 
@@ -20,22 +20,22 @@ export interface ICanvasLayerScalarGridOptions extends ICanvasLayerGridOptions {
  * ScalarField on canvas (a 'Raster')
  */
 export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
-    protected _malla: MallaEscalar
+    protected _grid: ScalarGrid
     protected _colorO: Scale
 
     protected options: ICanvasLayerScalarGridOptions = {
         arrowColor: 'grey',
         arrowDirection: 'from', // [from|towards]
         color: this._colorO,
-        domain: this._malla.range,
+        domain: this._grid.range,
         interpolate: true, // Change to use interpolation
         pixelStep: 2, // Draw pixelStep pixels at once with the same color
         type: 'colormap', // [colormap|vector]
         vectorSize: 20 // only used if 'vector'
     }
 
-    constructor(mallaEscalar: MallaEscalar, options?: ICanvasLayerScalarGridOptions) {
-        super(mallaEscalar, options)
+    constructor(grid: ScalarGrid, options?: ICanvasLayerScalarGridOptions) {
+        super(grid, options)
         Util.setOptions(this, options)
 
         this.options.color = chroma.scale(ColorScale.getScale('troposfera').colors).domain(this.options.domain)
@@ -85,7 +85,7 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
     }
 
     private _defaultColorScale(): Scale {
-        return chroma.scale(['white', 'black']).domain(this._malla.range)
+        return chroma.scale(['white', 'black']).domain(this._grid.range)
     }
 
     private _getRendererMethod() {
@@ -141,8 +141,8 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
                 const lat = pointCoords.lat
 
                 const v: number = this.options.interpolate
-                    ? this._malla.interpolatedValueAt(lon, lat)
-                    : this._malla.valueAt(lon, lat) // 'valueAt' | 'interpolatedValueAt'
+                    ? this._grid.interpolatedValueAt(lon, lat)
+                    : this._grid.valueAt(lon, lat) // 'valueAt' | 'interpolatedValueAt'
 
                 if (v !== null) {
                     z++
@@ -169,7 +169,7 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
      */
     private _drawArrows() {
         const pBounds = this._pixelBounds()
-        const pixelSize = (pBounds.max.x - pBounds.min.x) / this._malla.nCols
+        const pixelSize = (pBounds.max.x - pBounds.min.x) / this._grid.nCols
 
         const stride = Math.max(
             1,
@@ -181,14 +181,14 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
 
         const currentBounds = this._map.getBounds()
 
-        for (let y = 0; y < this._malla.height; y = y + stride) {
-            for (let x = 0; x < this._malla.width; x = x + stride) {
+        for (let y = 0; y < this._grid.height; y = y + stride) {
+            for (let x = 0; x < this._grid.width; x = x + stride) {
                 // let rasterIndex = y * this.raster.width + x; // TODO check
-                const [lon, lat] = this._malla.lonLatAtIndexes(x, y)
-                const v = this._malla.valueAt(lon, lat)
+                const [lon, lat] = this._grid.lonLatAtIndexes(x, y)
+                const v = this._grid.valueAt(lon, lat)
                 const center = new LatLng(lat, lon)
                 if (v !== null && currentBounds.contains(center)) {
-                    const celda = new Cell(center, v, this._malla.cellSize)
+                    const celda = new Cell(center, v, this._grid.cellSize)
                     this._drawArrow(celda, ctx)
                 }
             }

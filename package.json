@@ -34,7 +34,7 @@
   "name": "leaflet-canvas-grid",
   "repository": {
     "type": "git",
-    "url": "https://github.com/anxorl/ts-leaflet-grid.git"
+    "url": "https://github.com/anxorl/ts-leaflet-canvas-grid.git"
   },
   "scripts": {
     "build": "webpack",
@@ -42,5 +42,5 @@
     "publish:patch": "npm version patch && npm publish"
   },
   "types": "dist/LeafletCanvasGrid.d.ts",
-  "version": "2.0.0"
+  "version": "2.0.1"
 }

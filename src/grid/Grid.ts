@@ -20,24 +20,24 @@ export abstract class Grid<T extends number | Vector> {
     public _inFilter: (e: number | Vector) => boolean
 
     protected grid: T[][]
-    protected defMalla: IGridParams
+    protected defGrid: IGridParams
     protected _range: number[]
 
     constructor(params: IGridParams) {
-        this.defMalla = params
+        this.defGrid = params
 
         this.grid = null // to be defined by subclasses
-        this.isContinuous = this.xurCorner - this.defMalla.xllCorner >= 360
+        this.isContinuous = this.xurCorner - this.defGrid.xllCorner >= 360
         this.longitudeNeedsToBeWrapped = this.xurCorner > 180 // [0, 360] --> [-180, 180]
 
         this._inFilter = null
     }
 
-    public get cellSize() { return this.defMalla.cellSize }
-    public get nCols() { return this.defMalla.nCols }
-    public get nRows() { return this.defMalla.nRows }
-    public get xllCorner() { return this.defMalla.xllCorner }
-    public get yllCorner() { return this.defMalla.yllCorner }
+    public get cellSize() { return this.defGrid.cellSize }
+    public get nCols() { return this.defGrid.nCols }
+    public get nRows() { return this.defGrid.nRows }
+    public get xllCorner() { return this.defGrid.xllCorner }
+    public get yllCorner() { return this.defGrid.yllCorner }
     public get range() { return this._range }
 
     // alias
@@ -45,19 +45,19 @@ export abstract class Grid<T extends number | Vector> {
     public get width() { return this.nCols }
 
     // corresponding corners
-    public get xurCorner() { return this.defMalla.xllCorner + this.defMalla.nCols * this.defMalla.cellSize.x }
-    public get yurCorner() { return this.defMalla.yllCorner + this.defMalla.nRows * this.defMalla.cellSize.y }
+    public get xurCorner() { return this.defGrid.xllCorner + this.defGrid.nCols * this.defGrid.cellSize.x }
+    public get yurCorner() { return this.defGrid.yllCorner + this.defGrid.nRows * this.defGrid.cellSize.y }
 
     /**
      * Number of cells in the grid (rows * cols)
      * @returns {Number}
      */
     public numCells(): number {
-        return this.defMalla.nRows * this.defMalla.nCols
+        return this.defGrid.nRows * this.defGrid.nCols
     }
 
     public getBounds(): LatLngBounds {
-        return new LatLngBounds([[this.defMalla.yllCorner, this.defMalla.xllCorner], [this.yurCorner, this.xurCorner]])
+        return new LatLngBounds([[this.defGrid.yllCorner, this.defGrid.xllCorner], [this.yurCorner, this.xurCorner]])
     }
 
     /**
@@ -66,12 +66,12 @@ export abstract class Grid<T extends number | Vector> {
      */
     public getCells(stride = 1): Array<Cell<number | Vector>> {
         const cells: Array<Cell<T>> = []
-        for (let j = 0; j < this.defMalla.nRows; j = j + stride) {
-            for (let i = 0; i < this.defMalla.nCols; i = i + stride) {
+        for (let j = 0; j < this.defGrid.nRows; j = j + stride) {
+            for (let i = 0; i < this.defGrid.nCols; i = i + stride) {
                 const [lon, lat] = this.lonLatAtIndexes(i, j)
                 const center = new LatLng(lat, lon)
                 const value = this._valueAtIndexes(i, j)
-                const c = new Cell<T>(center, value, this.defMalla.cellSize)
+                const c = new Cell<T>(center, value, this.defGrid.cellSize)
                 cells.push(c) // <<
             }
         }
@@ -93,7 +93,7 @@ export abstract class Grid<T extends number | Vector> {
      */
     public extent(): number[] {
         const [xmin, xmax] = this._getWrappedLongitudes()
-        return [xmin, this.defMalla.yllCorner, xmax, this.yurCorner]
+        return [xmin, this.defGrid.yllCorner, xmax, this.yurCorner]
     }
 
     /**
@@ -107,7 +107,7 @@ export abstract class Grid<T extends number | Vector> {
 
         // let longitudeIn = this.isContinuous ? true : (lon >= xmin && lon <= xmax)
         const longitudeIn = lon >= xmin && lon <= xmax
-        const latitudeIn = lat >= this.defMalla.yllCorner && lat <= this.yurCorner
+        const latitudeIn = lat >= this.defGrid.yllCorner && lat <= this.yurCorner
 
         return longitudeIn && latitudeIn
     }
@@ -207,8 +207,8 @@ export abstract class Grid<T extends number | Vector> {
      * @returns {{x: Number, y: Number}} - object with x, y (lon, lat)
      */
     public randomPosition(o?: { x: number, y: number }): { x: number, y: number } {
-        const i = (Math.random() * this.defMalla.nCols) || 0
-        const j = (Math.random() * this.defMalla.nRows) || 0
+        const i = (Math.random() * this.defGrid.nCols) || 0
+        const j = (Math.random() * this.defGrid.nRows) || 0
         const res: { x: number, y: number } = { x: 0, y: 0 }
         res.x = this._longitudeAtX(i)
         res.y = this._latitudeAtY(j)
@@ -269,7 +269,7 @@ export abstract class Grid<T extends number | Vector> {
      * [xmin, xmax] in [-180, 180] range
      */
     private _getWrappedLongitudes(): number[] {
-        let xmin = this.defMalla.xllCorner
+        let xmin = this.defGrid.xllCorner
         let xmax = this.xurCorner
 
         if (this.longitudeNeedsToBeWrapped) {
@@ -279,7 +279,7 @@ export abstract class Grid<T extends number | Vector> {
             } else {
                 // not sure about this (just one particular case, but others...?)
                 xmax = this.xurCorner - 360
-                xmin = this.defMalla.xllCorner - 360
+                xmin = this.defGrid.xllCorner - 360
                 /* eslint-disable no-console */
                 // console.warn(`are these xmin: ${xmin} & xmax: ${xmax} OK?`)
                 // TODO: Better throw an exception on no-controlled situations.
@@ -302,10 +302,10 @@ export abstract class Grid<T extends number | Vector> {
                 lon = lon + 360
             }
         }
-        const ii = (lon - this.defMalla.xllCorner) / this.defMalla.cellSize.x
+        const ii = (lon - this.defGrid.xllCorner) / this.defGrid.cellSize.x
         const i = this._clampColumnIndex(ii)
 
-        const jj = (this.yurCorner - lat) / this.defMalla.cellSize.y
+        const jj = (this.yurCorner - lat) / this.defGrid.cellSize.y
         const j = this._clampRowIndex(jj)
 
         return [i, j]
@@ -376,8 +376,8 @@ export abstract class Grid<T extends number | Vector> {
      * @returns {Number} longitude at the center of the cell
      */
     private _longitudeAtX(i: number): number {
-        const halfPixel = this.defMalla.cellSize.x / 2.0
-        let lon = this.defMalla.xllCorner + halfPixel + i * this.defMalla.cellSize.x
+        const halfPixel = this.defGrid.cellSize.x / 2.0
+        let lon = this.defGrid.xllCorner + halfPixel + i * this.defGrid.cellSize.x
         if (this.longitudeNeedsToBeWrapped) {
             lon = lon > 180 ? lon - 360 : lon
         }
@@ -390,8 +390,8 @@ export abstract class Grid<T extends number | Vector> {
      * @returns {Number} latitude at the center of the cell
      */
     private _latitudeAtY(j: number): number {
-        const halfPixel = this.defMalla.cellSize.y / 2.0
-        return this.yurCorner - halfPixel - j * this.defMalla.cellSize.y
+        const halfPixel = this.defGrid.cellSize.y / 2.0
+        return this.yurCorner - halfPixel - j * this.defGrid.cellSize.y
     }
 
     /**
@@ -406,7 +406,7 @@ export abstract class Grid<T extends number | Vector> {
         if (ii < 0) {
             i = 0
         }
-        const maxCol = this.defMalla.nCols - 1
+        const maxCol = this.defGrid.nCols - 1
         if (ii > maxCol) {
             i = this.isContinuous ? 0 : maxCol // duplicate first column when raster is continuous
         }
@@ -425,7 +425,7 @@ export abstract class Grid<T extends number | Vector> {
         if (jj < 0) {
             j = 0
         }
-        const maxRow = this.defMalla.nRows - 1
+        const maxRow = this.defGrid.nRows - 1
         if (jj > maxRow) {
             j = maxRow
         }

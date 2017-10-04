@@ -4,7 +4,7 @@ import { Grid, IGridParams } from './Grid'
 // tslint:disable-next-line:no-var-requires
 const GeoTIFF = require('geotiff')
 
-export interface IMallaEscalar extends IGridParams {
+export interface IScalarGrid extends IGridParams {
     reverseX?: boolean
     reverseY?: boolean
     zs?: number[]
@@ -13,16 +13,16 @@ export interface IMallaEscalar extends IGridParams {
 /**
  * Scalar Field
  */
-export class MallaEscalar extends Grid<number> {
+export class ScalarGrid extends Grid<number> {
 
-    public static fromData(def: IGridParams, datos: Array<{ [x: string]: number }>, nomeVar: string = 'c'): MallaEscalar {
+    public static fromData(def: IGridParams, datos: Array<{ [x: string]: number }>, nomeVar: string = 'c'): ScalarGrid {
 
         const values: number[] = datos.map((it: { [x: string]: number }) => it[nomeVar])
 
-        const p: IMallaEscalar = def
+        const p: IScalarGrid = def
         p.reverseY = true
         p.zs = values
-        return new MallaEscalar(p)
+        return new ScalarGrid(p)
 
     }
     /**
@@ -36,10 +36,10 @@ export class MallaEscalar extends Grid<number> {
         const lines = asc.split('\n')
 
         // Header
-        MallaEscalar._checkIsValidASCIIGridHeader(lines)
+        ScalarGrid._checkIsValidASCIIGridHeader(lines)
 
         const n = /-?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+\-]?\d+)?/ // any number
-        const p: IMallaEscalar = {
+        const p: IScalarGrid = {
             cellSize: { x: parseFloat(lines[4].match(n).toString()), y: parseFloat(lines[4].match(n).toString()) },
             nCols: parseInt(lines[0].match(n).toString(), 10),
             nRows: parseInt(lines[1].match(n).toString(), 10),
@@ -66,7 +66,7 @@ export class MallaEscalar extends Grid<number> {
         p.zs = zs
 
         // console.timeEnd('ScalarField from ASC')
-        return new MallaEscalar(p)
+        return new ScalarGrid(p)
     }
 
     /**
@@ -113,7 +113,7 @@ export class MallaEscalar extends Grid<number> {
         }
 
         // console.timeEnd('ScalarField from GeoTIFF')
-        return new MallaEscalar(p)
+        return new ScalarGrid(p)
     }
 
     private static _checkIsValidASCIIGridHeader(lines: string[]) {
@@ -143,7 +143,7 @@ export class MallaEscalar extends Grid<number> {
     private reverseY: boolean
     private _zs: number[]
 
-    constructor(params: IMallaEscalar) {
+    constructor(params: IScalarGrid) {
         super(params)
         this.reverseX = params.reverseX
         this.reverseY = params.reverseY

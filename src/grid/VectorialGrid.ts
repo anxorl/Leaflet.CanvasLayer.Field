@@ -1,10 +1,10 @@
 import { max, min } from 'd3-array'
 import { Cell } from './Cell'
 import { Grid, IGridParams } from './Grid'
-import { MallaEscalar } from './ScalarGrid'
+import { ScalarGrid } from './ScalarGrid'
 import { Vector } from './Vector'
 
-export interface IMallaVectorial extends IGridParams {
+export interface IVectorialGrid extends IGridParams {
     us: number[],
     vs: number[]
 }
@@ -13,17 +13,17 @@ export interface IMallaVectorial extends IGridParams {
  *  A set of vectors assigned to a regular 2D-grid (lon-lat)
  *  (e.g. a raster representing winds for a region)
  */
-export class MallaVectorial extends Grid<Vector> {
+export class VectorialGrid extends Grid<Vector> {
 
     /**
      * Creates a VectorField from the content of two ScalarField files
-     * @param   {MallaEscalar} U - with u-component
-     * @param   {MallaEscalar} V - with v-component
+     * @param   {ScalarGrid} U - with u-component
+     * @param   {ScalarGrid} V - with v-component
      * @returns {VectorField}
      */
-    public static fromMallas(U: MallaEscalar, V: MallaEscalar): MallaVectorial {
-        const p = MallaVectorial._paramsFromScalarFields(U, V)
-        return new MallaVectorial(p)
+    public static fromGrids(U: ScalarGrid, V: ScalarGrid): VectorialGrid {
+        const p = VectorialGrid._paramsFromScalarFields(U, V)
+        return new VectorialGrid(p)
     }
 
     /**
@@ -32,11 +32,11 @@ export class MallaVectorial extends Grid<Vector> {
      * @param   {String} ascV - with v-component
      * @returns {VectorField}
      */
-    public static fromASCIIGrids(ascU: string, ascV: string, scaleFactor = 1): MallaVectorial {
-        const u = MallaEscalar.fromASCIIGrid(ascU, scaleFactor)
-        const v = MallaEscalar.fromASCIIGrid(ascV, scaleFactor)
-        const p = MallaVectorial._paramsFromScalarFields(u, v)
-        return new MallaVectorial(p)
+    public static fromASCIIGrids(ascU: string, ascV: string, scaleFactor = 1): VectorialGrid {
+        const u = ScalarGrid.fromASCIIGrid(ascU, scaleFactor)
+        const v = ScalarGrid.fromASCIIGrid(ascV, scaleFactor)
+        const p = VectorialGrid._paramsFromScalarFields(u, v)
+        return new VectorialGrid(p)
     }
 
     /**
@@ -45,12 +45,12 @@ export class MallaVectorial extends Grid<Vector> {
      * @param   {ArrayBuffer} gtV - geotiff data with v-component (band 0)
      * @returns {VectorField}
      */
-    public static fromGeoTIFFs(gtU: ArrayBuffer, gtV: ArrayBuffer): MallaVectorial {
-        const u = MallaEscalar.fromGeoTIFF(gtU)
-        const v = MallaEscalar.fromGeoTIFF(gtV)
-        const p = MallaVectorial._paramsFromScalarFields(u, v)
+    public static fromGeoTIFFs(gtU: ArrayBuffer, gtV: ArrayBuffer): VectorialGrid {
+        const u = ScalarGrid.fromGeoTIFF(gtU)
+        const v = ScalarGrid.fromGeoTIFF(gtV)
+        const p = VectorialGrid._paramsFromScalarFields(u, v)
 
-        return new MallaVectorial(p)
+        return new VectorialGrid(p)
     }
 
     /**
@@ -59,12 +59,12 @@ export class MallaVectorial extends Grid<Vector> {
      * @param   {Array} bandIndexesForUV
      * @returns {VectorField}
      */
-    public static fromMultibandGeoTIFF(geotiffData: ArrayBuffer, bandIndexesForUV: number[] = [0, 1]): MallaVectorial {
-        const u = MallaEscalar.fromGeoTIFF(geotiffData, bandIndexesForUV[0])
-        const v = MallaEscalar.fromGeoTIFF(geotiffData, bandIndexesForUV[1])
-        const p = MallaVectorial._paramsFromScalarFields(u, v)
+    public static fromMultibandGeoTIFF(geotiffData: ArrayBuffer, bandIndexesForUV: number[] = [0, 1]): VectorialGrid {
+        const u = ScalarGrid.fromGeoTIFF(geotiffData, bandIndexesForUV[0])
+        const v = ScalarGrid.fromGeoTIFF(geotiffData, bandIndexesForUV[1])
+        const p = VectorialGrid._paramsFromScalarFields(u, v)
 
-        return new MallaVectorial(p)
+        return new VectorialGrid(p)
     }
 
     /**
@@ -75,7 +75,7 @@ export class MallaVectorial extends Grid<Vector> {
      * @param   {ScalarField} v
      * @returns {Object} - parameters to build VectorField
      */
-    public static _paramsFromScalarFields(u: MallaEscalar, v: MallaEscalar): IMallaVectorial {
+    public static _paramsFromScalarFields(u: ScalarGrid, v: ScalarGrid): IVectorialGrid {
         return {
             cellSize: u.cellSize,
             nCols: u.nCols,
@@ -89,12 +89,12 @@ export class MallaVectorial extends Grid<Vector> {
 
     protected grid: Vector[][]
     protected _range: number[]
-    protected defMalla: IGridParams
+    protected defGrid: IGridParams
 
     private vs: number[]
     private us: number[]
 
-    constructor(params: IMallaVectorial) {
+    constructor(params: IVectorialGrid) {
         super(params)
 
         this.us = params.us
@@ -112,14 +112,14 @@ export class MallaVectorial extends Grid<Vector> {
     public getScalarField(type: string) {
         const f = this._getFunctionFor(type)
         const p = {
-            cellSize: this.defMalla.cellSize,
-            nCols: this.defMalla.nCols,
-            nRows: this.defMalla.nRows,
-            xllCorner: this.defMalla.xllCorner,
-            yllCorner: this.defMalla.yllCorner,
+            cellSize: this.defGrid.cellSize,
+            nCols: this.defGrid.nCols,
+            nRows: this.defGrid.nRows,
+            xllCorner: this.defGrid.xllCorner,
+            yllCorner: this.defGrid.yllCorner,
             zs: this._applyOnField(f)
         }
-        return new MallaEscalar(p)
+        return new ScalarGrid(p)
     }
 
     /**
@@ -206,7 +206,7 @@ export class MallaVectorial extends Grid<Vector> {
         return zs
     }
 
-    // us and vs must to be same x y shape. TO DO: make this not dimension dependant or use mallaEscalar grid
+    // us and vs must to be same x y shape. TO DO: make this not dimension dependant or use ScalarGrid
     private _arraysTo2d(us: number[], vs: number[], nRows: number, nCols: number, reverseX?: boolean, reverseY?: boolean) {
         const grid = []
         let jIndex: number

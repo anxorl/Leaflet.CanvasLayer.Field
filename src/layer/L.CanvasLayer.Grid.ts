@@ -31,14 +31,14 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
         opacity: 1
     }
 
-    protected _malla: Grid<T>
+    protected _grid: Grid<T>
     protected _visible: boolean
 
-    constructor(malla: Grid<T>, options?: LayerOptions) {
+    constructor(grid: Grid<T>, options?: LayerOptions) {
         super(options)
         Util.setOptions(this, options)
         this._visible = true
-        this.setData(malla)
+        this.setData(grid)
     }
 
     /* eslint-disable no-unused-vars */
@@ -59,21 +59,21 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
         return this._visible
     }
 
-    public setData(malla: Grid<T>) {
-        malla.setFilter(this.options.inFilter)
-        this._malla = malla
+    public setData(grid: Grid<T>) {
+        grid.setFilter(this.options.inFilter)
+        this._grid = grid
         this.needRedraw()
         this.fire('load')
     }
 
     public setFilter(f: (e: number | Vector) => boolean) {
         this.options.inFilter = f
-        this._malla.setFilter(f)
+        this._grid.setFilter(f)
         this.needRedraw()
     }
 
     public needRedraw() {
-        if (this._map && this._malla) {
+        if (this._map && this._grid) {
             super.needRedraw()
         }
         return this
@@ -89,7 +89,7 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
     }
 
     public getBounds(): LatLngBounds {
-        const bb = this._malla.extent()
+        const bb = this._grid.extent()
 
         const southWest = new LatLng(bb[1], bb[0])
         const northEast = new LatLng(bb[3], bb[2])
@@ -178,10 +178,10 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
     }
 
     private _queryValue(ll: LatLng): { latlng: LatLng, value: number | Vector } {
-        const v = this._malla
+        const v = this._grid
             ? (this.options.interpolate
-                ? this._malla.interpolatedValueAt(ll.lng, ll.lat)
-                : this._malla.valueAt(ll.lng, ll.lat))
+                ? this._grid.interpolatedValueAt(ll.lng, ll.lat)
+                : this._grid.valueAt(ll.lng, ll.lat))
             : null
         const result = {
             latlng: ll,
