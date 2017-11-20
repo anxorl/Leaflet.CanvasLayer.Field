@@ -42,5 +42,5 @@
     "publish:patch": "npm version patch && npm publish"
   },
   "types": "dist/LeafletCanvasGrid.d.ts",
-  "version": "2.0.1"
+  "version": "2.0.6"
 }

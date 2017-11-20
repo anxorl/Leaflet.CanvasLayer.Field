@@ -79,7 +79,7 @@ export class ColorScale extends Class {
             positions: [0, 1]
         },
         blackbody: {
-            colors: ['#000000', '#e60000', '#e6d200', '#ffffff', '#a0c8ff'],
+            colors: ['#00000000', '#e60000', '#e6d200', '#ffffff', '#a0c8ff'],
             positions: [0, 0.2, 0.4, 0.7, 1]
         },
         bluered: {
@@ -155,7 +155,7 @@ export class ColorScale extends Class {
             positions: [0, 1]
         },
         troposfera: {
-            colors: ['rgb(128,128,128)',
+            colors: ['rgba(128,128,128,0)',
                 'rgb(79,9,207)',
                 'rgb(8,55,206)',
                 'rgb(8,184,216)',
