@@ -52,14 +52,14 @@ module.exports = {
     /* new WebpackBuildNotifierPlugin({
       title: "Construcción visorMallas"
     }), */
-    /* new webpack.optimize.UglifyJsPlugin({
+    new webpack.optimize.UglifyJsPlugin({
       mangle: {
         keep_fnames: true
       },
       output: {
         comments: false
       }
-    }) */
+    })
   ],
   watchOptions: {
     ignored: '/node_modules/',
