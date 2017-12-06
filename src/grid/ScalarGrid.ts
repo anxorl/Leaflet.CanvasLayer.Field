@@ -210,9 +210,10 @@ export class ScalarGrid extends Grid<number> {
         let p = 0
         for (let j = 0; j < nRows; j++) {
             const row = []
-            for (let i = 0; i < nCols; i++ , p++) {
+            for (let i = 0; i < nCols; i++) {
                 const z = array[p]
                 row[i] = this._isValid(z) ? z : null // <<<
+                p++
             }
             jIndex = reverseY ? (nRows - 1) - j : j
             grid[jIndex] = reverseX ? row.reverse() : row

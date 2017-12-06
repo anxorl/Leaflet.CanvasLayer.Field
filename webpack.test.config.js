@@ -5,7 +5,7 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin")
 
 const PATHS = {
   src: path.join(__dirname, './src'),
-  dist: path.join(__dirname, './dist')
+  dist: path.join(__dirname, './test/dist')
 }
 
 module.exports = {
@@ -30,18 +30,6 @@ module.exports = {
         use: 'awesome-typescript-loader'
       }
     ]
-  },
-
-  externals: {
-    'chroma-js': 'chroma-js',
-    'd3-array': 'd3-array',
-    'd3-scale': 'd3-scale',
-    'd3-selection': 'd3-selection',
-    'd3-timer': 'd3-timer',
-    'geotiff': 'geotiff',
-    'leaflet': 'leaflet',
-    'leaflet-canvas-layer': 'leaflet-canvas-layer',
-    '../../node_modules/leaflet/dist/leaflet.css': 'leaflet/dist/leaflet.css'
   },
 
   resolve: {

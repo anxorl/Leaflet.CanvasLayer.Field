@@ -1,0 +1,41 @@
+<html>
+
+<head>
+    <script src="./dist/leaflet-canvas-grid.js"></script>
+    <script src="../node_modules/chroma-js/chroma.js"></script>
+    <style>
+        #colorBar-labels {
+            font-size: 15px
+        }
+    </style>
+</head>
+
+<body>
+    <div id='proba'></div>
+    <script>
+        options = {
+            background: '#fff',
+            decimals: 2,
+            height: 20,
+            labelFontSize: 12,
+            labels: ['Muy buena', 'Buena', 'Mejorable', 'Mala', 'Muy mala'], // empty for no labels
+            labelTextPosition: 'middle', // start | middle | end
+            margin: 15,
+            position: 'bottomright',
+            steps: 100,
+            textColor: 'black',
+            title: 'Legend', // ej: Ocean Currents
+            units: 'uds', // ej: m/s
+            width: 300, // for colorbar itself (control is wider)
+        }
+        domain = [0.5, 5.5]
+
+
+        cr = chroma.scale(ColorScale.getScale('troposfera').colors).domain(domain)
+        colorBar = new ColorBar(
+            cr, domain, options)
+        document.getElementById('proba').appendChild(colorBar.onAdd())
+    </script>
+</body>
+
+</html>

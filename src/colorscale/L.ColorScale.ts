@@ -27,8 +27,8 @@ export class ColorScale extends Class {
 
         // There are colors, but no positions (equally interval is assumed).
         if (!def.positions) {
-            const number = def.colors.length
-            const delta = 1.0 / (number - 1)
+            const nColors = def.colors.length
+            const delta = 1.0 / (nColors - 1)
             const pos = []
             let p = 0
             do {
@@ -123,8 +123,8 @@ export class ColorScale extends Class {
             positions: [0, 0.169, 0.173, 0.337, 0.341, 0.506, 0.671, 0.675, 0.839, 0.843, 1]
         },
         ica: {
-            colors: ['#00ff00', '#00ffff', '#ff0000', '#ff00ff'],
-            positions: [0, 0.5, 0.75, 1]
+            colors: ['#256814', '#40bd27', '#bfbf1f', '#8f201e', '#f40e05'],
+            positions: [0, 0.25, 0.5, 0.75, 1]
         },
         jet: {
             colors: ['#000083', '#003CAA', '#05FFFF', '#FFFF00', '#FA0000', '#800000'],
@@ -184,7 +184,7 @@ export class ColorScale extends Class {
         },
     }
 
-    private canvas: HTMLCanvasElement
+    // private canvas: HTMLCanvasElement
     private csImageData: Uint8ClampedArray
     private definition: IScaleDefinition
 
@@ -252,7 +252,7 @@ export class ColorScale extends Class {
         const ctx = c.getContext('2d')
         this._createGradientIn(ctx)
 
-        this.canvas = c
+        // this.canvas = c
         this.csImageData = ctx.getImageData(0, 0, this.options.width, 1).data
     }
 

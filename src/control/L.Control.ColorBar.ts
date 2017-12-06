@@ -8,14 +8,15 @@ import { Scale } from 'chroma-js'
 import { range } from 'd3-array'
 import { scaleLinear } from 'd3-scale'
 import { EnterElement, select, Selection } from 'd3-selection'
-import { Control, ControlOptions, DomEvent, DomUtil, Map, Util } from 'leaflet'
+import { Control, ControlOptions, DomEvent, DomUtil, Util } from 'leaflet'
 
 export interface IColorBarOptions extends ControlOptions {
     background?: string,
     decimals?: number,
     height?: number,
     labelFontSize?: number,
-    labels?: number[],
+    labelMargin?: number,
+    labels?: Array<number | string>,
     labelTextPosition?: string,
     margin?: number,
     steps?: number,
@@ -32,6 +33,7 @@ export class ColorBar extends Control {
         decimals: 2,
         height: 20,
         labelFontSize: 12,
+        labelMargin: 4,
         labels: [], // empty for no labels
         labelTextPosition: 'middle', // start | middle | end
         margin: 15,
@@ -43,7 +45,7 @@ export class ColorBar extends Control {
         width: 300, // for colorbar itself (control is wider)
     }
 
-    private _map: Map
+    // private _map: Map
     private _range: number[]
     private _color: Scale
 
@@ -54,8 +56,8 @@ export class ColorBar extends Control {
         Util.setOptions(this, options)
     }
 
-    public onAdd(map: Map) {
-        this._map = map
+    public onAdd(/* map: Map */) {
+        // this._map = map
         const div = DomUtil.create(
             'div',
             'leaflet-control-colorBar leaflet-bar leaflet-control'
@@ -99,7 +101,7 @@ export class ColorBar extends Control {
     }
 
     private _createSvgIn(d: HTMLElement) {
-        const spaceForLabels = this.options.labels ? this.options.margin : 0
+        const spaceForLabels = this.options.labels ? this.options.labelFontSize + this.options.labelMargin : 0
         const svg = select(d)
             .append('svg')
             .attr('width', this.options.width + this.options.margin * 2)
@@ -144,14 +146,16 @@ export class ColorBar extends Control {
             .data(positionPerLabelValue)
             .enter()
             .append('text')
+
         labels
             .attr('x', (d) => d.position + this.options.margin)
-            .attr('y', this.options.height + this.options.margin)
+            .attr('y', this.options.height + this.options.labelMargin)
+            .attr('dominant-baseline', 'hanging')
             .attr('font-size', `${this.options.labelFontSize}px`)
             .attr('text-anchor', this.options.labelTextPosition)
             .attr('fill', this.options.textColor)
             .attr('class', 'leaflet-control-colorBar-label')
-            .text((d) => `${d.value.toFixed(this.options.decimals)}`)
+            .text((d) => typeof d.value === 'number' ? `${d.value.toFixed(this.options.decimals)}` : d.value)
     }
 
     private _getColorPerValue() {
@@ -167,14 +171,14 @@ export class ColorBar extends Control {
         return colorPerValue
     }
 
-    private _getPositionPerLabelValue(): Array<{ value: number, position: number }> {
+    private _getPositionPerLabelValue(): Array<{ value: number | string, position: number }> {
         const xPositionFor = scaleLinear()
             .range([0, this.options.width])
             .domain(this._range)
         const data = this.options.labels
-        const positionPerLabel = data.map((d: number) => {
+        const positionPerLabel = data.map((d: number | string, i: number) => {
             return {
-                position: xPositionFor(d),
+                position: xPositionFor(typeof d === 'number' ? d : i + 1),
                 value: d
             }
         })

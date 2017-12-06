@@ -7,7 +7,7 @@
         ],
         "linebreak-style": [true, "LF"],
         "no-invalid-this": [true, "check-function-in-method"],
-        "variable-name": [
+        "variable-name": [true,
             "ban-keywords",
             "check-format",
             "allow-leading-underscore",
@@ -16,7 +16,7 @@
         "trailing-comma": [
             false
         ],
-        "max-line-length": [180],
+        "max-line-length": [true, 180],
         "max-classes-per-file": [true, 5],
         "object-literal-sort-keys": [true, "ignore-case"],
         "jsx-no-multiline-js": false,

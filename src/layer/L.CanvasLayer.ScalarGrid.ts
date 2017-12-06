@@ -61,10 +61,16 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
         this.needRedraw()
     }
 
-    public setColorScale(nome: string, classes?: number | number[]) {
+    public setColorScale(nome: string, classes?: number | number[] | string[]) {
         this.options.color = chroma.scale(ColorScale.getScale(nome).colors).domain(this.options.domain)
-        if (classes) { this.options.color.classes(classes) }
-        this.needRedraw()
+        if (classes) {
+            if (classes instanceof Array && typeof classes[0] === 'string') {
+                this.options.color.classes(classes.length)
+            } else {
+                this.options.color.classes(classes as number | number[])
+            }
+            this.needRedraw()
+        }
     }
 
     public setColorClasses(n: number) {

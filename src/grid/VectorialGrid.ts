@@ -214,11 +214,12 @@ export class VectorialGrid extends Grid<Vector> {
 
         for (let j = 0; j < nRows; j++) {
             const row = []
-            for (let i = 0; i < nCols; i++ , p++) {
+            for (let i = 0; i < nCols; i++) {
                 const u = us[p]
                 const v = vs[p]
                 const valid = this._isValid(u) && this._isValid(v)
                 row[i] = valid ? new Vector(u, v) : null // <<<
+                p++
             }
             jIndex = reverseY ? (nRows - 1) - j : j
             grid[jIndex] = reverseX ? row.reverse() : row
