@@ -85,6 +85,11 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
         return events
     }
 
+    public setDomain(rango: number[]) {
+        this.options.color.domain(rango)
+        this.needRedraw()
+    }
+
     protected _showCanvas() {
         super._showCanvas()
         this.needRedraw() // TODO check spurious redraw (e.g. hide/show without moving map)
