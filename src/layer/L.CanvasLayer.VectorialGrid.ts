@@ -10,7 +10,7 @@ import { VectorialGrid } from '../grid/VectorialGrid'
 import { CanvasLayerGrid, ICanvasLayerGridOptions } from './L.CanvasLayer.Grid'
 
 export interface ICanvasLayerVectorialGridOptions extends ICanvasLayerGridOptions {
-    color?: string
+    color?: string | CanvasGradient
     duration?: number
     fade?: number
     maxAge?: number
@@ -90,14 +90,16 @@ export class CanvasLayerVectorialGrid extends CanvasLayerGrid<Vector> {
 
             // colormap vs. simple color
             const color = this.options.color
-            if (typeof color === 'function') {
+            ctx.strokeStyle = color
+            /* if (color instanceof CanvasGradient) {
                 ctx.strokeStyle = color(par.m)
-            }
+            } */
 
             const width = this.options.width
-            if (typeof width === 'function') {
+            ctx.lineWidth = width
+            /* if (typeof width === 'function') {
                 ctx.lineWidth = width(par.m)
-            }
+            } */
 
             ctx.stroke()
         }

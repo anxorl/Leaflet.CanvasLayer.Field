@@ -14,7 +14,10 @@
         "stripInternal": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "lib": ["dom", "es2016"]
+        "lib": [
+            "dom",
+            "es2016"
+        ]
         /*"types": [
             "jasmine",
             "webpack"
@@ -26,6 +29,8 @@
             "name": "tslint-language-service",
             "configFile": "./tslint.json"
         }]*/
-    }
-    // "files": ["./src/visorMallas.ts"]
+    },
+    /* "files": [
+        "./src/LeafletCanvasGrid.ts"
+    ] */
 }

@@ -13,6 +13,7 @@ module.exports = {
   entry: {
     "leaflet-canvas-grid": PATHS.src + '/LeafletCanvasGrid.ts',
   },
+  mode: 'production',
   output: {
     path: PATHS.dist,
     filename: '[name].js',
@@ -21,14 +22,14 @@ module.exports = {
   devtool: "source-map",
   module: {
     rules: [{
-        test: /\.ts$/,
-        use: 'tslint-loader',
-        enforce: 'pre'
-      },
-      {
-        test: /\.ts$/,
-        use: 'awesome-typescript-loader'
-      }
+      test: /\.ts$/,
+      use: 'tslint-loader',
+      enforce: 'pre'
+    },
+    {
+      test: /\.ts$/,
+      use: 'awesome-typescript-loader'
+    }
     ]
   },
 
@@ -52,14 +53,14 @@ module.exports = {
     /* new WebpackBuildNotifierPlugin({
       title: "Construcción visorMallas"
     }), */
-    new webpack.optimize.UglifyJsPlugin({
+    /*new webpack.optimize.UglifyJsPlugin({
       mangle: {
         keep_fnames: true
       },
       output: {
         comments: false
       }
-    })
+    })*/
   ],
   watchOptions: {
     ignored: '/node_modules/',
