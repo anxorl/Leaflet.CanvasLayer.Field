@@ -69,8 +69,8 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
             } else {
                 this.options.color.classes(classes as number | number[])
             }
-            this.needRedraw()
         }
+        this.needRedraw()
     }
 
     public setColorClasses(n: number) {
