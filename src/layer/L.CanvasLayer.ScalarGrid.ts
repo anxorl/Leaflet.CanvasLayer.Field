@@ -148,7 +148,7 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
     private _prepareImageIn(data: Uint8ClampedArray, width: number, height: number) {
         const step = this.options.pixelStep
         const w4 = 4 * width
-        const f = (this.options.interpolate ? this._grid.interpolatedValueAt : this._grid.valueAt).bind(this)
+        const f = (this.options.interpolate ? this._grid.interpolatedValueAt : this._grid.valueAt).bind(this._grid)
         let z = 0
         for (let j = 0; j < height; j += step) {
             for (let i = 0; i < width; i += step) {
