@@ -146,25 +146,22 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
     private _prepareImageIn(data: Uint8ClampedArray, width: number, height: number) {
         const step = this.options.pixelStep
         const w4 = 4 * width
+        const f = this.options.interpolate ? this._grid.interpolatedValueAt : this._grid.valueAt
         let z = 0
         for (let j = 0; j < height; j += step) {
             for (let i = 0; i < width; i += step) {
                 const pointCoords = this._map.containerPointToLatLng([i, j])
-                const lon = pointCoords.lng
-                const lat = pointCoords.lat
 
-                const v: number = this.options.interpolate
-                    ? this._grid.interpolatedValueAt(lon, lat)
-                    : this._grid.valueAt(lon, lat) // 'valueAt' | 'interpolatedValueAt'
+                const v = f(pointCoords.lng, pointCoords.lat) // 'valueAt' | 'interpolatedValueAt'
 
                 if (v !== null) {
                     z++
-                    const color = this.options.color(v) // this._getColorFor(v)
-                    const [R, G, B, A] = color.rgba()
+                    const pos0 = 4 * (j * width + i)
+                    const [R, G, B, A] = this.options.color(v).rgba() // this._getColorFor(v)
                     for (let sx = 0; sx < step && sx + i < width; sx++) {
-                        const pos0 = 4 * (j * width + i + sx)
+                        const pos1 = pos0 + 4 * sx
                         for (let sy = 0; sy < step && j + sy < height; sy++) {
-                            const pos = pos0 + w4 * sy
+                            const pos = pos1 + w4 * sy
                             data[pos] = R
                             data[pos + 1] = G
                             data[pos + 2] = B
