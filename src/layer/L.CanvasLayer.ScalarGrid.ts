@@ -145,6 +145,7 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
      */
     private _prepareImageIn(data: Uint8ClampedArray, width: number, height: number) {
         const step = this.options.pixelStep
+        const w4 = 4 * width
         let z = 0
         for (let j = 0; j < height; j += step) {
             for (let i = 0; i < width; i += step) {
@@ -161,8 +162,9 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
                     const color = this.options.color(v) // this._getColorFor(v)
                     const [R, G, B, A] = color.rgba()
                     for (let sx = 0; sx < step && sx + i < width; sx++) {
+                        const pos0 = 4 * (j * width + i + sx)
                         for (let sy = 0; sy < step && j + sy < height; sy++) {
-                            const pos = ((j + sy) * width + i + sx) * 4
+                            const pos = pos0 + w4 * sy
                             data[pos] = R
                             data[pos + 1] = G
                             data[pos + 2] = B
