@@ -38,7 +38,9 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
         super(grid, options)
         Util.setOptions(this, options)
 
-        this.options.color = chroma.scale(ColorScale.getScale('troposfera').colors).domain(this.options.domain)
+        this.options.color = chroma
+            .scale(ColorScale.getScale('troposfera').colors)
+            .domain(this.options.domain)
     }
 
     /* eslint-disable no-unused-vars */
@@ -146,13 +148,13 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
     private _prepareImageIn(data: Uint8ClampedArray, width: number, height: number) {
         const step = this.options.pixelStep
         const w4 = 4 * width
-        const f = this.options.interpolate ? this._grid.interpolatedValueAt : this._grid.valueAt
+        const f = (this.options.interpolate ? this._grid.interpolatedValueAt : this._grid.valueAt).bind(this)
         let z = 0
         for (let j = 0; j < height; j += step) {
             for (let i = 0; i < width; i += step) {
                 const pointCoords = this._map.containerPointToLatLng([i, j])
 
-                const v = f(pointCoords.lng, pointCoords.lat) // 'valueAt' | 'interpolatedValueAt'
+                const v: number = f(pointCoords.lng, pointCoords.lat) // 'valueAt' | 'interpolatedValueAt'
 
                 if (v !== null) {
                     z++
