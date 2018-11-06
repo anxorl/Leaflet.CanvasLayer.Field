@@ -86,7 +86,8 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
     }
 
     public setDomain(rango: number[]) {
-        this.options.color.domain(rango)
+        this.options.domain = rango
+        this.options.color.domain(this.options.domain)
         this.needRedraw()
     }
 
