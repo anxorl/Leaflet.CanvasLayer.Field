@@ -18,7 +18,7 @@ export interface ICanvasLayerGridOptions extends LayerOptions {
 
 export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasLayer {
 
-    protected _inFilterO: (e: number | Vector) => boolean
+    protected _inFilterO: (e: T) => boolean
 
     protected options: ICanvasLayerGridOptions = {
         inFilter: this._inFilterO,
@@ -66,7 +66,7 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
         this.fire('load')
     }
 
-    public setFilter(f: (e: number | Vector) => boolean) {
+    public setFilter(f: (e: T) => boolean) {
         this.options.inFilter = f
         this._grid.setFilter(f)
         this.needRedraw()
@@ -169,7 +169,7 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
             this.off('mousemove', this.options.onMouseMove, this)
     } */
 
-    private _changeCursorOn(v: { latlng: LatLng, value: number | Vector }) {
+    private _changeCursorOn(v: { latlng: LatLng, value: T }) {
         if (!this.options.mouseMoveCursor) { return }
 
         const { value, noValue } = this.options.mouseMoveCursor
@@ -177,7 +177,7 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
         style.cursor = v.value !== null ? value : noValue
     }
 
-    private _queryValue(ll: LatLng): { latlng: LatLng, value: number | Vector } {
+    private _queryValue(ll: LatLng): { latlng: LatLng, value: T } {
         const v = this._grid
             ? (this.options.interpolate
                 ? this._grid.interpolatedValueAt(ll.lng, ll.lat)

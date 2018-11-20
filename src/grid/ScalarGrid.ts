@@ -2,7 +2,7 @@ import { max, min } from 'd3-array'
 import { Grid, IGridParams } from './Grid'
 
 // tslint:disable-next-line:no-var-requires
-const GeoTIFF = require('geotiff')
+// const GeoTIFF = require('geotiff')
 
 export interface IScalarGrid extends IGridParams {
     reverseX?: boolean
@@ -30,7 +30,7 @@ export class ScalarGrid extends Grid<number> {
      * @param   {String}   asc
      * @returns {ScalarField}
      */
-    public static fromASCIIGrid(asc: string, scaleFactor = 1) {
+    /* public static fromASCIIGrid(asc: string, scaleFactor = 1) {
         // console.time('ScalarField from ASC')
 
         const lines = asc.split('\n')
@@ -67,7 +67,7 @@ export class ScalarGrid extends Grid<number> {
 
         // console.timeEnd('ScalarField from ASC')
         return new ScalarGrid(p)
-    }
+    } */
 
     /**
      * Creates a ScalarField from the content of a GeoTIFF file, as read by geotiff.js
@@ -75,7 +75,7 @@ export class ScalarGrid extends Grid<number> {
      * @param   {Number}   bandIndex
      * @returns {ScalarField}
      */
-    public static fromGeoTIFF(data: any, bandIndex = 0) {
+    /* public static fromGeoTIFF(data: any, bandIndex = 0) {
         // console.time('ScalarField from GeoTIFF')
 
         const tiff = GeoTIFF.parse(data) // geotiff.js
@@ -114,9 +114,9 @@ export class ScalarGrid extends Grid<number> {
 
         // console.timeEnd('ScalarField from GeoTIFF')
         return new ScalarGrid(p)
-    }
+    } */
 
-    private static _checkIsValidASCIIGridHeader(lines: string[]) {
+    /* private static _checkIsValidASCIIGridHeader(lines: string[]) {
         const upperCasesLines = lines.map((lin) => lin.toUpperCase())
 
         const parameters = [
@@ -137,7 +137,7 @@ export class ScalarGrid extends Grid<number> {
             }
             i++
         }
-    }
+    } */
 
     private reverseX: boolean
     private reverseY: boolean

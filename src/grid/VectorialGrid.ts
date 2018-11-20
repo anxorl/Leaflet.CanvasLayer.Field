@@ -32,12 +32,12 @@ export class VectorialGrid extends Grid<Vector> {
      * @param   {String} ascV - with v-component
      * @returns {VectorField}
      */
-    public static fromASCIIGrids(ascU: string, ascV: string, scaleFactor = 1): VectorialGrid {
+    /* public static fromASCIIGrids(ascU: string, ascV: string, scaleFactor = 1): VectorialGrid {
         const u = ScalarGrid.fromASCIIGrid(ascU, scaleFactor)
         const v = ScalarGrid.fromASCIIGrid(ascV, scaleFactor)
         const p = VectorialGrid._paramsFromScalarFields(u, v)
         return new VectorialGrid(p)
-    }
+    } */
 
     /**
      * Creates a VectorField from the content of two different Geotiff files
@@ -45,13 +45,13 @@ export class VectorialGrid extends Grid<Vector> {
      * @param   {ArrayBuffer} gtV - geotiff data with v-component (band 0)
      * @returns {VectorField}
      */
-    public static fromGeoTIFFs(gtU: ArrayBuffer, gtV: ArrayBuffer): VectorialGrid {
+    /* public static fromGeoTIFFs(gtU: ArrayBuffer, gtV: ArrayBuffer): VectorialGrid {
         const u = ScalarGrid.fromGeoTIFF(gtU)
         const v = ScalarGrid.fromGeoTIFF(gtV)
         const p = VectorialGrid._paramsFromScalarFields(u, v)
 
         return new VectorialGrid(p)
-    }
+    } */
 
     /**
      * Creates a VectorField from the content of Multiband Geotiff
@@ -59,13 +59,13 @@ export class VectorialGrid extends Grid<Vector> {
      * @param   {Array} bandIndexesForUV
      * @returns {VectorField}
      */
-    public static fromMultibandGeoTIFF(geotiffData: ArrayBuffer, bandIndexesForUV: number[] = [0, 1]): VectorialGrid {
+    /* public static fromMultibandGeoTIFF(geotiffData: ArrayBuffer, bandIndexesForUV: number[] = [0, 1]): VectorialGrid {
         const u = ScalarGrid.fromGeoTIFF(geotiffData, bandIndexesForUV[0])
         const v = ScalarGrid.fromGeoTIFF(geotiffData, bandIndexesForUV[1])
         const p = VectorialGrid._paramsFromScalarFields(u, v)
 
         return new VectorialGrid(p)
-    }
+    } */
 
     /**
      * Build parameters for VectorField, from 2 ScalarFields.

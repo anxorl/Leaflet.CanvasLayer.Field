@@ -1,13 +1,17 @@
 import { LatLng, LatLngBounds } from 'leaflet'
+import proj4 = require('proj4')
 import { Cell, ISizeCell } from './Cell'
 import { Vector } from './Vector'
 
 export interface IGridParams {
-    cellSize: ISizeCell,
-    nCols: number,
-    nRows: number,
-    xllCorner: number,
+    cellSize: ISizeCell
+    nCols: number
+    nRows: number
+    xllCorner: number
     yllCorner: number
+    xurCorner?: number
+    yurCorner?: number
+    projection?: string
 }
 
 /**
@@ -17,14 +21,24 @@ export interface IGridParams {
 export abstract class Grid<T extends number | Vector> {
     public isContinuous: boolean
     public longitudeNeedsToBeWrapped: boolean
-    public _inFilter: (e: number | Vector) => boolean
+    public _inFilter: (e: T) => boolean
 
     protected grid: T[][]
     protected defGrid: IGridParams
     protected _range: number[]
 
+    protected projection: proj4.Static
+
     constructor(params: IGridParams) {
         this.defGrid = params
+        this.defGrid.xurCorner = this.defGrid.xllCorner + this.defGrid.nCols * this.defGrid.cellSize.x
+        this.defGrid.yurCorner = this.defGrid.yllCorner + this.defGrid.nRows * this.defGrid.cellSize.y
+
+        this.projection = proj4(
+            this.defGrid.projection
+                ? this.defGrid.projection
+                : '+proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees'
+            , '+proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees')
 
         this.grid = null // to be defined by subclasses
         this.isContinuous = this.xurCorner - this.defGrid.xllCorner >= 360
@@ -36,17 +50,18 @@ export abstract class Grid<T extends number | Vector> {
     public get cellSize() { return this.defGrid.cellSize }
     public get nCols() { return this.defGrid.nCols }
     public get nRows() { return this.defGrid.nRows }
-    public get xllCorner() { return this.defGrid.xllCorner }
-    public get yllCorner() { return this.defGrid.yllCorner }
+
+    // Esquinas en ll (Usar as de params def para obter as proxectadas)
+    public get xllCorner() { return this.projection.forward([this.defGrid.xllCorner, this.defGrid.yllCorner])[0] }
+    public get yllCorner() { return this.projection.forward([this.defGrid.xllCorner, this.defGrid.yllCorner])[1] }
+    // corresponding corners in ll
+    public get xurCorner() { return this.projection.forward([this.defGrid.xurCorner, this.defGrid.yurCorner])[0] }
+    public get yurCorner() { return this.projection.forward([this.defGrid.xurCorner, this.defGrid.yurCorner])[1] }
     public get range() { return this._range }
 
     // alias
     public get height() { return this.nRows }
     public get width() { return this.nCols }
-
-    // corresponding corners
-    public get xurCorner() { return this.defGrid.xllCorner + this.defGrid.nCols * this.defGrid.cellSize.x }
-    public get yurCorner() { return this.defGrid.yllCorner + this.defGrid.nRows * this.defGrid.cellSize.y }
 
     /**
      * Number of cells in the grid (rows * cols)
@@ -57,14 +72,15 @@ export abstract class Grid<T extends number | Vector> {
     }
 
     public getBounds(): LatLngBounds {
-        return new LatLngBounds([[this.defGrid.yllCorner, this.defGrid.xllCorner], [this.yurCorner, this.xurCorner]])
+        const llCorner = this.projection.forward([this.defGrid.xllCorner, this.defGrid.yllCorner])
+        return new LatLngBounds([[llCorner[1], llCorner[0]], [this.yurCorner, this.xurCorner]])
     }
 
     /**
      * A list with every cell
      * @returns {Array<Cell>} - cells (x-ascending & y-descending order)
      */
-    public getCells(stride = 1): Array<Cell<number | Vector>> {
+    public getCells(stride = 1): Array<Cell<T>> {
         const cells: Array<Cell<T>> = []
         for (let j = 0; j < this.defGrid.nRows; j = j + stride) {
             for (let i = 0; i < this.defGrid.nCols; i = i + stride) {
@@ -82,7 +98,7 @@ export abstract class Grid<T extends number | Vector> {
      * Apply a filter function to field values
      * @param   {Function} f - boolean function
      */
-    public setFilter(f: (e: number | Vector) => boolean): void {
+    public setFilter(f: (e: T) => boolean): void {
         this._inFilter = f
         this._updateRange()
     }
@@ -302,10 +318,12 @@ export abstract class Grid<T extends number | Vector> {
                 lon = lon + 360
             }
         }
-        const ii = (lon - this.defGrid.xllCorner) / this.defGrid.cellSize.x
+
+        const punto = this.projection.inverse([lon, lat])
+        const ii = (punto[0] - this.defGrid.xllCorner) / this.defGrid.cellSize.x
         const i = this._clampColumnIndex(ii)
 
-        const jj = (this.yurCorner - lat) / this.defGrid.cellSize.y
+        const jj = (this.defGrid.yurCorner - punto[1]) / this.defGrid.cellSize.y
         const j = this._clampRowIndex(jj)
 
         return [i, j]
