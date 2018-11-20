@@ -1,5 +1,5 @@
 import { LatLng, LatLngBounds } from 'leaflet'
-import * as proj4 from 'proj4'
+import proj4 from 'proj4'
 import { Cell, ISizeCell } from './Cell'
 import { Vector } from './Vector'
 
