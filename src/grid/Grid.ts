@@ -41,7 +41,7 @@ export abstract class Grid<T extends number | Vector> {
             , '+proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees')
 
         this.grid = null // to be defined by subclasses
-        this.isContinuous = this.xurCorner - this.defGrid.xllCorner >= 360
+        this.isContinuous = this.xurCorner - this.xllCorner >= 360
         this.longitudeNeedsToBeWrapped = this.xurCorner > 180 // [0, 360] --> [-180, 180]
 
         this._inFilter = null
@@ -72,8 +72,7 @@ export abstract class Grid<T extends number | Vector> {
     }
 
     public getBounds(): LatLngBounds {
-        const llCorner = this.projection.forward([this.defGrid.xllCorner, this.defGrid.yllCorner])
-        return new LatLngBounds([[llCorner[1], llCorner[0]], [this.yurCorner, this.xurCorner]])
+        return new LatLngBounds([[this.yllCorner, this.xllCorner], [this.yurCorner, this.xurCorner]])
     }
 
     /**
@@ -109,7 +108,7 @@ export abstract class Grid<T extends number | Vector> {
      */
     public extent(): number[] {
         const [xmin, xmax] = this._getWrappedLongitudes()
-        return [xmin, this.defGrid.yllCorner, xmax, this.yurCorner]
+        return [xmin, this.yllCorner, xmax, this.yurCorner]
     }
 
     /**
@@ -123,7 +122,7 @@ export abstract class Grid<T extends number | Vector> {
 
         // let longitudeIn = this.isContinuous ? true : (lon >= xmin && lon <= xmax)
         const longitudeIn = lon >= xmin && lon <= xmax
-        const latitudeIn = lat >= this.defGrid.yllCorner && lat <= this.yurCorner
+        const latitudeIn = lat >= this.yllCorner && lat <= this.yurCorner
 
         return longitudeIn && latitudeIn
     }
@@ -285,7 +284,7 @@ export abstract class Grid<T extends number | Vector> {
      * [xmin, xmax] in [-180, 180] range
      */
     private _getWrappedLongitudes(): number[] {
-        let xmin = this.defGrid.xllCorner
+        let xmin = this.xllCorner
         let xmax = this.xurCorner
 
         if (this.longitudeNeedsToBeWrapped) {
@@ -295,7 +294,7 @@ export abstract class Grid<T extends number | Vector> {
             } else {
                 // not sure about this (just one particular case, but others...?)
                 xmax = this.xurCorner - 360
-                xmin = this.defGrid.xllCorner - 360
+                xmin = this.xllCorner - 360
                 /* eslint-disable no-console */
                 // console.warn(`are these xmin: ${xmin} & xmax: ${xmax} OK?`)
                 // TODO: Better throw an exception on no-controlled situations.
