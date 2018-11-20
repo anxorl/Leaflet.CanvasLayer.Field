@@ -42,7 +42,8 @@ module.exports = {
     'geotiff': 'geotiff',
     'leaflet': 'leaflet',
     'leaflet-canvas-layer': 'leaflet-canvas-layer',
-    '../../node_modules/leaflet/dist/leaflet.css': 'leaflet/dist/leaflet.css'
+    '../../node_modules/leaflet/dist/leaflet.css': 'leaflet/dist/leaflet.css',
+    'proj4': 'proj4'
   },
 
   resolve: {
