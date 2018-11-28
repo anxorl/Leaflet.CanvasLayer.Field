@@ -51,7 +51,7 @@ export abstract class Grid<T extends number | Vector> {
     public get nCols() { return this.defGrid.nCols }
     public get nRows() { return this.defGrid.nRows }
 
-    // Esquinas en ll (Usar as de params def para obter as proxectadas)
+    // Esquinas en ll (Usar as de params.def para obter as proxectadas)
     public get xllCorner() { return this.projection.forward([this.defGrid.xllCorner, this.defGrid.yllCorner])[0] }
     public get yllCorner() { return this.projection.forward([this.defGrid.xllCorner, this.defGrid.yllCorner])[1] }
     // corresponding corners in ll
@@ -108,10 +108,13 @@ export abstract class Grid<T extends number | Vector> {
      */
     public extent(): number[] {
         const [xmin, xmax] = this._getWrappedLongitudes()
-        return [xmin - 2 * this.cellSize.x,
-        this.yllCorner - 2 * this.cellSize.y,
-        xmax + 2 * this.cellSize.x,
-        this.yurCorner + 2 * this.cellSize.y]
+        const dx = (xmax - xmin) / this.nCols
+        const dy = (this.yurCorner - this.yllCorner) / this.nRows
+        return [
+            xmin - 2 * dx,
+            this.yllCorner - 2 * dy,
+            xmax + 2 * dx,
+            this.yurCorner + 2 * dy]
     }
 
     /**
