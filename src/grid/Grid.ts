@@ -108,7 +108,10 @@ export abstract class Grid<T extends number | Vector> {
      */
     public extent(): number[] {
         const [xmin, xmax] = this._getWrappedLongitudes()
-        return [xmin, this.yllCorner, xmax, this.yurCorner]
+        return [xmin - 2 * this.cellSize.x,
+        this.yllCorner - 2 * this.cellSize.y,
+        xmax + 2 * this.cellSize.x,
+        this.yurCorner + 2 * this.cellSize.y]
     }
 
     /**
