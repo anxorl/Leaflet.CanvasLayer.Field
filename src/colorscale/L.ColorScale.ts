@@ -130,6 +130,14 @@ export class ColorScale extends Class {
             colors: ['#000083', '#003CAA', '#05FFFF', '#FFFF00', '#FA0000', '#800000'],
             positions: [0, 0.125, 0.375, 0.625, 0.875, 1]
         },
+        LDen: {
+            colors: ['#fafafa', '#fafafa', '#ffff02', '#ffcd69', '#ff8002', '#ff0202', '#ff00ff', '#ff00ff'],
+            positions: [45, 50, 55, 60, 65, 70, 75, 80]
+        },
+        pdaudio: {
+            colors: ['#00ff00', '#00ff00', '#008000', '#ffff00', '#a07f00', '#ff7f00', '#ff7f7f', '#ff0000', '#a00020', '#7f00a0', '#3f00ff', '#3f00ff'],
+            positions: [40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80]
+        },
         picnic: {
             colors: ['#0000ff', '#3399ff', '#66ccff', '#99ccff', '#ccccff', '#ffffff', '#ffccff', '#ff99ff', '#ff66cc', '#ff6666', '#ff0000'],
             positions: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
