@@ -43,3 +43,5 @@ jspm_packages
 
 # Linked library (/dist)
 /docs/dist/leaflet.canvaslayer.field.js
+
+*.tgz

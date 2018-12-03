@@ -2,7 +2,7 @@
   "author": "anxorl",
   "description": "Leaflet plugin to Show grid scalar or vectorial data on a map. This project is a fork and a typescript translation from https://github.com/IHCantabria/Leaflet.CanvasLayer.Field",
   "dependencies": {
-    "chroma-js": "^1.4.0",
+    "chroma-js": "^1.4.1",
     "d3-array": "^1.2.4",
     "d3-scale": "^1.0.7",
     "d3-selection": "^1.3.2",
@@ -24,11 +24,11 @@
     "@types/typescript": "^2.0.0",
     "awesome-typescript-loader": "^3.5.0",
     "extract-text-webpack-plugin": "^3.0.2",
-    "ts-loader": "^5.3.0",
+    "ts-loader": "^5.3.1",
     "tslint": "^5.11.0",
     "tslint-loader": "^3.5.4",
     "typescript": "^2.9.2",
-    "webpack": "^4.26.0",
+    "webpack": "^4.26.1",
     "webpack-build-notifier": "^0.1.30",
     "webpack-cli": "^3.1.2"
   },
