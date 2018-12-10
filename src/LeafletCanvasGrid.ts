@@ -9,6 +9,7 @@ import { CanvasLayerGrid } from './layer/L.CanvasLayer.Grid'
 import { CanvasLayerPointsGrid } from './layer/L.CanvasLayer.PointsGrid'
 import { CanvasLayerScalarGrid, ICanvasLayerScalarGridOptions } from './layer/L.CanvasLayer.ScalarGrid'
 import { CanvasLayerVectorialGrid } from './layer/L.CanvasLayer.VectorialGrid'
+import { ITropGridLayerOptions, TropGridLayer } from './layer/L.GridLayer.ScalarGrid'
 
 // Interfaces base
 export { ISizeCell, IGridParams, IScalarGrid, IVectorialGrid }
@@ -16,9 +17,9 @@ export { ISizeCell, IGridParams, IScalarGrid, IVectorialGrid }
 export { Cell, Vector, Grid, ScalarGrid, VectorialGrid }
 
 // Interfaces de Layers
-export { ICanvasLayerScalarGridOptions }
+export { ICanvasLayerScalarGridOptions, ITropGridLayerOptions }
 // Layers
-export { CanvasLayerGrid, CanvasLayerScalarGrid, CanvasLayerVectorialGrid, CanvasLayerPointsGrid }
+export { CanvasLayerGrid, CanvasLayerScalarGrid, CanvasLayerVectorialGrid, CanvasLayerPointsGrid, TropGridLayer }
 
 // Interfaces de ColorBar
 export { IColorBarOptions }
