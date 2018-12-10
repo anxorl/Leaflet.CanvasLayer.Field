@@ -4,7 +4,13 @@ import { Coords, DomUtil, DoneCallback, GridLayer, GridLayerOptions, LatLng, Lat
 import { ColorScale } from '../colorscale/L.ColorScale'
 import { ScalarGrid } from '../grid/ScalarGrid'
 
+export interface IScalarParameter {
+    nome: string
+    unidade: string
+}
+
 export interface ITropGridLayerOptions extends GridLayerOptions {
+    parametro: IScalarParameter
     color?: Scale
     domain?: number[]
     interpolate?: boolean
@@ -26,9 +32,20 @@ export class TropGridLayer extends GridLayer {
         this.options.color.domain(this._grid.range)
         this.options.domain = this._grid.range
         this.options.interpolate = ops.interpolate || true
+        this.options.parametro = ops.parametro
         this.options.pixelStep = ops.pixelStep || 2
         this.options.type = ops.type || 'colormap'
     }
+
+    public get dominio(): number[] { return this.options.domain }
+    public set dominio(rango: number[]) {
+        this.options.domain = rango
+        this.options.color.domain(this.options.domain)
+        this.redraw()
+    }
+
+    public get parametro(): IScalarParameter { return this.options.parametro }
+    public set parametro(p: IScalarParameter) { this.options.parametro = p }
 
     public getBounds(): LatLngBounds {
         const bb = this._grid.extent()
@@ -49,12 +66,6 @@ export class TropGridLayer extends GridLayer {
                 this.options.color.classes(classes as number | number[])
             }
         }
-        this.redraw()
-    }
-
-    public setDomain(rango: number[]) {
-        this.options.domain = rango
-        this.options.color.domain(this.options.domain)
         this.redraw()
     }
 
@@ -91,7 +102,6 @@ export class TropGridLayer extends GridLayer {
         const step = overstep || this.options.pixelStep
         const w4 = 4 * size.x
         const f = (this.options.interpolate ? this._grid.interpolatedValueAt : this._grid.valueAt).bind(this._grid)
-        let z = 0
         for (let j = 0; j < size.y; j += step) {
             const pj = j + j0
             for (let i = 0; i < size.x; i += step) {
@@ -101,7 +111,6 @@ export class TropGridLayer extends GridLayer {
                 const v: number = f(pointCoords.lng, pointCoords.lat) // 'valueAt' | 'interpolatedValueAt'
 
                 if (v && v >= this.options.domain[0]) {
-                    z++
                     const pos0 = 4 * (j * size.x + i)
                     const [R, G, B, A] = this.options.color(v).rgba() // this._getColorFor(v)
                     for (let sx = 0; sx < step && sx + i < size.x; sx++) {
@@ -115,9 +124,7 @@ export class TropGridLayer extends GridLayer {
                         }
                     }
                 }
-                // pos = pos + 4
             }
         }
-        console.log(z)
     }
 }
