@@ -10,10 +10,10 @@ export interface IScalarParameter {
 }
 
 export interface ITropGridLayerOptions extends GridLayerOptions {
-    parametro: IScalarParameter
     color?: Scale
     domain?: number[]
     interpolate?: boolean
+    parametro?: IScalarParameter
     pixelStep?: number
     type?: string
 }
