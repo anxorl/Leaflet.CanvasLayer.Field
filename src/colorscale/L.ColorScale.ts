@@ -134,10 +134,6 @@ export class ColorScale extends Class {
             colors: ['#fafafa22', '#ffff02', '#ffcd69', '#ff8002', '#ff0202', '#ff00ff'],
             positions: [45, 50, 55, 60, 65, 70, 75, 80]
         },
-        pdaudio: {
-            colors: ['#00ff0022', '#00ff00', '#008000', '#ffff00', '#a07f00', '#ff7f00', '#ff7f7f', '#ff0000', '#a00020', '#7f00a0', '#3f00ff'],
-            positions: [40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80]
-        },
         picnic: {
             colors: ['#0000ff', '#3399ff', '#66ccff', '#99ccff', '#ccccff', '#ffffff', '#ffccff', '#ff99ff', '#ff66cc', '#ff6666', '#ff0000'],
             positions: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
@@ -153,6 +149,10 @@ export class ColorScale extends Class {
         rdbu: {
             colors: ['#050aac', '#6a89f7', '#bebebe', '#dcaa84', '#e6915a', '#b20a1c'],
             positions: [0, 0.35, 0.5, 0.6, 0.7, 1]
+        },
+        ruido: {
+            colors: ['#00ff0022', '#00ff00', '#008000', '#ffff00', '#a07f00', '#ff7f00', '#ff7f7f', '#ff0000', '#a00020', '#7f00a0', '#3f00ff'],
+            positions: [40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80]
         },
         spring: {
             colors: ['#ff00ff', '#ffff00'],
