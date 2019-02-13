@@ -41,6 +41,7 @@
   },
   "scripts": {
     "build": "webpack",
+    "build:dev": "webpack --config webpack.config.dev.js",
     "build:test": "webpack --config webpack.test.config.js",
     "watch": "webpack --watch",
     "watch:test": "webpack --watch --config webpack.test.config.js",
@@ -48,5 +49,5 @@
     "publish:patch": "npm version patch && npm publish"
   },
   "types": "dist/LeafletCanvasGrid.d.ts",
-  "version": "2.1.21"
+  "version": "2.2.3"
 }

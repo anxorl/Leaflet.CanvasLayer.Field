@@ -25,6 +25,17 @@ export class ScalarGrid extends Grid<number> {
         return new ScalarGrid(p)
 
     }
+
+    public static fromArray(def: IGridParams, values: number[]): ScalarGrid {
+
+        // const values: number[] = datos.map((it: { [x: string]: number }) => it[nomeVar])
+
+        const p: IScalarGrid = def
+        p.reverseY = true
+        p.zs = values
+        return new ScalarGrid(p)
+
+    }
     /**
      * Creates a ScalarField from the content of an ASCIIGrid file
      * @param   {String}   asc
