@@ -31,7 +31,7 @@ export class TropGridLayer extends GridLayer {
         this.options.color = ops.color || chroma.scale(ColorScale.getScale('troposfera').colors)
         this.options.color.domain(this._grid.range)
         this.options.domain = this._grid.range
-        this.options.interpolate = ops.interpolate || true
+        this.options.interpolate = ops.interpolate !== undefined ? ops.interpolate : true
         this.options.parametro = ops.parametro
         this.options.pixelStep = ops.pixelStep || 2
         this.options.type = ops.type || 'colormap'
