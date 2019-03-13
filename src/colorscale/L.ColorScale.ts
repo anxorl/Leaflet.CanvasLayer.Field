@@ -20,6 +20,8 @@ export interface IColorScaleOptions {
 
 export class ColorScale extends Class {
 
+  public static pdAudioScales: string[] = ['lden', 'lden_noche', 'ruido']
+
   public static buildFullDefinition(defTemp: IScaleDefinition): IScaleDefinition {
     // Allows conversion from definition = ['color1', 'color2'...] to definition = {colors: ['color1', 'color2']}
     let def: IScaleDefinition
@@ -131,8 +133,12 @@ export class ColorScale extends Class {
       positions: [0, 0.125, 0.375, 0.625, 0.875, 1]
     },
     lden: {
-      colors: ['#ffff02', '#ffcd69', '#ff8002', '#ff0202', '#ff00ff'],
-      positions: [55, 60, 65, 70, 75]
+      colors: ['#fafafa', '#ffff02', '#ffcd69', '#ff8002', '#ff0202', '#ff00ff'],
+      positions: [50, 55, 60, 65, 70, 75]
+    },
+    lden_noche: {
+      colors: ['#fafafa', '#63c800', '#ffff02', '#ffcd69', '#ff8002', '#ff0202'],
+      positions: [45, 50, 55, 60, 65, 70]
     },
     picnic: {
       colors: ['#0000ff', '#3399ff', '#66ccff', '#99ccff', '#ccccff', '#ffffff', '#ffccff', '#ff99ff', '#ff66cc', '#ff6666', '#ff0000'],
@@ -151,8 +157,8 @@ export class ColorScale extends Class {
       positions: [0, 0.35, 0.5, 0.6, 0.7, 1]
     },
     ruido: {
-      colors: ['#00ff0022', '#00ff00', '#008000', '#ffff00', '#a07f00', '#ff7f00', '#ff7f7f', '#ff0000', '#a00020', '#7f00a0', '#3f00ff'],
-      positions: [40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80]
+      colors: ['#00ff01', '#008002', '#ffff00', '#a37b00', '#ff7f00', '#ff7f7c', '#fe0000', '#9e011e', '#7e00a1', '#3e01fe'],
+      positions: [35, 40, 45, 50, 55, 60, 65, 70, 75, 80]
     },
     spring: {
       colors: ['#ff00ff', '#ffff00'],

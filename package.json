@@ -45,6 +45,8 @@
     "build:test": "webpack --config webpack.test.config.js",
     "watch": "webpack --watch",
     "watch:test": "webpack --watch --config webpack.test.config.js",
+    "update:minor": "npm version minor",
+    "update:patch": "npm version patch",
     "publish:minor": "npm version minor && npm publish",
     "publish:patch": "npm version patch && npm publish"
   },
