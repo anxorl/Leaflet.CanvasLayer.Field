@@ -7,7 +7,7 @@ import { Class, Util } from 'leaflet'
 
 export interface IScaleDefinition {
   colors: string[]
-  positions?: number[]
+  positions: number[]
 }
 
 export interface IColorScaleOptions {
@@ -179,10 +179,13 @@ export class ColorScale extends Class {
         'rgb(248,193,26)',
         'rgb(243,56,19)',
         'rgb(219,9,103)'
-      ]
+      ],
+      positions: [0.0, 0.09, 0.18, 0.27, 0.36, 0.45, 0.55, 0.64, 0.73, 0.82, 0.91, 1.00]
     },
     viridis: {
-      colors: ['#440154', '#482777', '#3f4a8a', '#31678e', '#26838f', '#1f9d8a', '#6cce5a', '#b6de2b', '#fee825']
+      colors: ['#440154', '#482777', '#3f4a8a', '#31678e', '#26838f', '#1f9d8a', '#6cce5a', '#b6de2b', '#fee825'],
+      positions: [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1]
+
     },
     winter: {
       colors: ['#0000ff', '#00ff80'],
