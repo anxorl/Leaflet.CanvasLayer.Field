@@ -1,5 +1,7 @@
 import { LatLng, LatLngBounds } from 'leaflet'
-import * as proj from 'proj4'
+import * as proj4_ from 'proj4'
+// tslint:disable-next-line: no-string-literal
+const proj4 = 'default' in proj4_ ? proj4_['default'] : proj4_
 import { Cell, ISizeCell } from './Cell'
 import { Vector } from './Vector'
 
@@ -27,14 +29,14 @@ export abstract class Grid<T extends number | Vector> {
     protected defGrid: IGridParams
     protected _range: number[]
 
-    protected projection: proj.InterfaceProjection
+    protected projection: proj4.Converter
 
     constructor(params: IGridParams) {
         this.defGrid = params
         this.defGrid.xurCorner = this.defGrid.xllCorner + this.defGrid.nCols * this.defGrid.cellSize.x
         this.defGrid.yurCorner = this.defGrid.yllCorner + this.defGrid.nRows * this.defGrid.cellSize.y
 
-        this.projection = proj.Proj(
+        this.projection = proj4(
             this.defGrid.projection
                 ? this.defGrid.projection
                 : '+proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees'
