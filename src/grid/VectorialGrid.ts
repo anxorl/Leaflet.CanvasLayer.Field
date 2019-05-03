@@ -21,8 +21,8 @@ export class VectorialGrid extends Grid<Vector> {
      * @param   {ScalarGrid} V - with v-component
      * @returns {VectorField}
      */
-    public static fromGrids(U: ScalarGrid, V: ScalarGrid): VectorialGrid {
-        const p = VectorialGrid._paramsFromScalarFields(U, V)
+    public static fromGrids(U: ScalarGrid, V: ScalarGrid, params?: IGridParams): VectorialGrid {
+        const p = params ? { ...params, us: U.zs, vs: V.zs } : VectorialGrid._paramsFromScalarFields(U, V)
         return new VectorialGrid(p)
     }
 
@@ -112,12 +112,9 @@ export class VectorialGrid extends Grid<Vector> {
     public getScalarField(type: string) {
         const f = this._getFunctionFor(type)
         const p = {
-            cellSize: this.defGrid.cellSize,
-            nCols: this.defGrid.nCols,
-            nRows: this.defGrid.nRows,
-            xllCorner: this.defGrid.xllCorner,
-            yllCorner: this.defGrid.yllCorner,
-            zs: this._applyOnField(f)
+            ...this.defGrid,
+            // zs: this._applyOnField(f)
+            zs: this.us.map((x, idx) => f(x, this.vs[idx]))
         }
         return new ScalarGrid(p)
     }
@@ -187,11 +184,11 @@ export class VectorialGrid extends Grid<Vector> {
                 directionTo: uv.directionTo,
                 magnitude: uv.magnitude
             }
-            return fn[type]() // magnitude, directionTo, directionFrom
+            return fn[type].bind(uv)() // magnitude, directionTo, directionFrom
         }
     }
 
-    private _applyOnField(func: (u: number, v: number) => number) {
+    /* private _applyOnField(func: (u: number, v: number) => number) {
         const zs = []
         const n = this.numCells()
         for (let i = 0; i < n; i++) {
@@ -204,7 +201,7 @@ export class VectorialGrid extends Grid<Vector> {
             }
         }
         return zs
-    }
+    } */
 
     // us and vs must to be same x y shape. TO DO: make this not dimension dependant or use ScalarGrid
     private _arraysTo2d(us: number[], vs: number[], nRows: number, nCols: number, reverseX?: boolean, reverseY?: boolean) {

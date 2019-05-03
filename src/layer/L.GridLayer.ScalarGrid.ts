@@ -50,7 +50,7 @@ export class TropGridLayer extends GridLayer {
   public set parametro(p: IScalarParameter) { this.options.parametro = p }
 
   public getBounds(): LatLngBounds {
-    const bb = this._grid.extent()
+    const bb = this._grid.llextent()
 
     const southWest = new LatLng(bb[1], bb[0])
     const northEast = new LatLng(bb[3], bb[2])
@@ -103,14 +103,14 @@ export class TropGridLayer extends GridLayer {
     const j0 = scaledCoords.y
     const step = overstep || this.options.pixelStep
     const w4 = 4 * size.x
-    const f = (this.options.interpolate ? this._grid.interpolatedValueAt : this._grid.valueAt).bind(this._grid)
+    const interpFunc = (this.options.interpolate ? this._grid.interpolatedValueAt : this._grid.valueAt).bind(this._grid)
     for (let j = 0; j < size.y; j += step) {
       const pj = j + j0
       for (let i = 0; i < size.x; i += step) {
         const pi = i + i0
         // const pointCoords = this._map.containerPointToLatLng([i, j])
         const pointCoords = this._map.unproject([pi, pj], coords.z)
-        const v: number = f(pointCoords.lng, pointCoords.lat) // 'valueAt' | 'interpolatedValueAt'
+        const v: number = interpFunc(pointCoords.lng, pointCoords.lat) // 'valueAt' | 'interpolatedValueAt'
 
         if (v !== null && (this.options.pintarMinimos || v >= this.options.domain[0])) {
           const pos0 = 4 * (j * size.x + i)
