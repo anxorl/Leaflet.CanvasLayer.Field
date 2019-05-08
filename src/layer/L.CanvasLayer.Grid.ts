@@ -128,6 +128,7 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
     }
 
     protected _getDrawingContext(): CanvasRenderingContext2D {
+        if (!this._canvas) { return null }
         const g = this._canvas.getContext('2d')
         g.clearRect(0, 0, this._canvas.width, this._canvas.height)
         return g

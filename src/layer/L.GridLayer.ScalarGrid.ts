@@ -79,7 +79,6 @@ export class TropGridLayer extends GridLayer {
     tile.height = size.y
 
     setTimeout(() => {
-      // console.log(coords)
       const img = ctx.createImageData(tile.width, tile.height)
       this._prepareImageIn(img.data, coords, size)
       ctx.putImageData(img, 0, 0)
@@ -98,6 +97,7 @@ export class TropGridLayer extends GridLayer {
    * param {Number} height
    */
   private _prepareImageIn(data: Uint8ClampedArray, coords: Coords, size: Point, overstep?: number) {
+    if (!this._map) { return }
     const scaledCoords = coords.scaleBy(this.getTileSize())
     const i0 = scaledCoords.x
     const j0 = scaledCoords.y

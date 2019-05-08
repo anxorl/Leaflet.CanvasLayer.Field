@@ -57,6 +57,7 @@ export class CanvasLayerVectorialGrid extends CanvasLayerGrid<Vector> {
 
   protected startAnimation() {
     const ctx = this._getDrawingContext()
+    if (!ctx) { return }
     const paths = this._prepareParticlePaths()
 
     if (this.timer) {
