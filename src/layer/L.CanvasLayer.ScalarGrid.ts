@@ -7,13 +7,14 @@ import { CanvasLayerGrid, ICanvasLayerGridOptions } from './L.CanvasLayer.Grid'
 import Scale = chroma.Scale
 
 export interface ICanvasLayerScalarGridOptions extends ICanvasLayerGridOptions {
-    arrowColor?: string
+    arrowColor?: Scale | string
     arrowDirection?: string,
-    color?: Scale,
+    color?: Scale | string,
     domain?: number[],
+    lineWidth?: number,
     pixelStep?: number,
     type?: string,
-    vectorSize?: number
+    vectorSize?: number // | ((x: number) => any)
 }
 
 /**
@@ -29,6 +30,7 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
         color: this._colorO,
         domain: this._grid.range,
         interpolate: true, // Change to use interpolation
+        lineWidth: 1,
         pixelStep: 2, // Draw pixelStep pixels at once with the same color
         type: 'colormap', // [colormap|vector]
         vectorSize: 20 // only used if 'vector'
@@ -43,21 +45,16 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
             .domain(this.options.domain)
     }
 
-    /* eslint-disable no-unused-vars */
     public onDrawLayer() {
         if (!this.isVisible()) { return }
         this._updateOpacity()
-
-        const r = this._getRendererMethod()
-        // tslint:disable:no-console
-        console.time('onDrawLayer')
-        r()
-        console.timeEnd('onDrawLayer')
+        this._getRendererMethod()()
     }
-    /* eslint-enable no-unused-vars */
-    public getColor(): Scale {
+
+    public getColor(): Scale | string {
         return this.options.color
     }
+
     public setColor(f: Scale) {
         this.options.color = f
         this.needRedraw()
@@ -76,7 +73,9 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
     }
 
     public setColorClasses(n: number) {
-        this.options.color.classes(n)
+        if (typeof this.options.color !== 'string') {
+            this.options.color.classes(n)
+        }
         this.needRedraw()
     }
 
@@ -89,7 +88,9 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
 
     public setDomain(rango: number[]) {
         this.options.domain = rango
-        this.options.color.domain(this.options.domain)
+        if (typeof this.options.color !== 'string') {
+            this.options.color.domain(this.options.domain)
+        }
         this.needRedraw()
     }
 
@@ -148,18 +149,21 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
     private _prepareImageIn(data: Uint8ClampedArray, width: number, height: number) {
         const step = this.options.pixelStep
         const w4 = 4 * width
-        const f = (this.options.interpolate ? this._grid.interpolatedValueAt : this._grid.valueAt).bind(this._grid)
-        let z = 0
+        const interpFunc = (
+            this.options.interpolate ? this._grid.interpolatedValueAt : this._grid.valueAt).bind(this._grid)
+
         for (let j = 0; j < height; j += step) {
             for (let i = 0; i < width; i += step) {
                 const pointCoords = this._map.containerPointToLatLng([i, j])
 
-                const v: number = f(pointCoords.lng, pointCoords.lat) // 'valueAt' | 'interpolatedValueAt'
+                const v: number = interpFunc(pointCoords.lng, pointCoords.lat) // 'valueAt' | 'interpolatedValueAt'
 
                 if (v !== null) {
-                    z++
                     const pos0 = 4 * (j * width + i)
-                    const [R, G, B, A] = this.options.color(v).rgba() // this._getColorFor(v)
+                    const [R, G, B, A] = (typeof this.options.color !== 'string')
+                        ? this.options.color(v).rgba()
+                        : chroma(this.options.color).rgba()
+
                     for (let sx = 0; sx < step && sx + i < width; sx++) {
                         const pos1 = pos0 + 4 * sx
                         for (let sy = 0; sy < step && j + sy < height; sy++) {
@@ -174,7 +178,6 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
                 // pos = pos + 4
             }
         }
-        console.log(z)
     }
 
     /**
@@ -186,11 +189,10 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
 
         const stride = Math.max(
             1,
-            Math.floor(1.2 * this.options.vectorSize / pixelSize)
+            Math.floor(1.5 * this.options.vectorSize / pixelSize)
         )
 
         const ctx = this._getDrawingContext()
-        ctx.strokeStyle = this.options.arrowColor
 
         const currentBounds = this._map.getBounds()
 
@@ -209,7 +211,7 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
     }
 
     private _pixelBounds(): Bounds {
-        const _bounds = this.getBounds()
+        const _bounds = this.getLatLngBounds()
         const northWest = this._map.latLngToContainerPoint(
             _bounds.getNorthWest()
         )
@@ -224,10 +226,10 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
         const projected = this._map.latLngToContainerPoint(celda.center)
 
         // colormap vs. simple color
-        const color = this.options.color
-        if (typeof color === 'function') {
-            ctx.strokeStyle = color(celda.value).name()
-        }
+        const color = this.options.arrowColor
+        ctx.strokeStyle = typeof color === 'function' ?
+            `rgba(${color(celda.value).rgba().join(',')})` : color
+        ctx.lineWidth = this.options.lineWidth
 
         const size = this.options.vectorSize
         ctx.save()
@@ -249,16 +251,4 @@ export class CanvasLayerScalarGrid extends CanvasLayerGrid<number> {
         ctx.stroke()
         ctx.restore()
     }
-
-    /**
-     * Gets a chroma color for a pixel value, according to 'options.color'
-     */
-    /*     private _getColorFor(v: number) {
-            const c = this.options.color // e.g. for a constant 'red'
-            if (typeof c === 'function') {
-                c = this.options.color(v)
-            }
-            const color = c(v) // to be more flexible, a chroma color object is always created || TODO improve efficiency
-            return color
-        } */
 }

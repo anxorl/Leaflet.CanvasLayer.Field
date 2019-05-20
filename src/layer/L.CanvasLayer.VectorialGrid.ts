@@ -2,185 +2,201 @@
 /**
  * Animated VectorField on canvas
  */
+import { Scale } from 'chroma-js'
 import { interval, Timer } from 'd3-timer'
 import { LatLng, Util } from 'leaflet'
-import { IViewInfo } from 'leaflet-canvas-layer'
 import { Vector } from '../grid/Vector'
 import { VectorialGrid } from '../grid/VectorialGrid'
 import { CanvasLayerGrid, ICanvasLayerGridOptions } from './L.CanvasLayer.Grid'
 
 export interface ICanvasLayerVectorialGridOptions extends ICanvasLayerGridOptions {
-    color?: string | CanvasGradient
-    duration?: number
-    fade?: number
-    maxAge?: number
-    paths?: number
-    velocityScale?: number
-    width?: number
+  color?: string | Scale
+  domain?: number[]
+  duration?: number
+  fade?: number
+  interpolate?: boolean
+  maxAge?: number
+  paths?: number
+  velocityScale?: number
+  width?: number | ((x: number) => number)
 }
 
 export class CanvasLayerVectorialGrid extends CanvasLayerGrid<Vector> {
 
-    protected options: ICanvasLayerVectorialGridOptions = {
-        color: 'grey', // html-color | function colorFor(value) [e.g. chromajs.scale]
-        duration: 40, // milliseconds per 'frame'
-        fade: .97, // 0 to 1
-        maxAge: 200, // number of maximum frames per path
-        paths: 1000,
-        velocityScale: 0.0025,
-        width: 1.2, // number | function widthFor(value)
+  protected options: ICanvasLayerVectorialGridOptions = {
+    color: 'grey',      // html-color | function colorFor(value) [e.g. chromajs.scale]
+    domain: [0, 1],     // number[]: colormap domain
+    duration: 40,       // number: milliseconds per 'frame'
+    fade: .97,          // number: 0 to 1
+    interpolate: true,  // boolean: interpolate magnitude
+    maxAge: 200,        // number: number of maximum frames per path
+    paths: 1000,        // number: number of particles in the domain
+    velocityScale: 1,   // number: velocity modifier
+    width: 1.2,         // number | function widthFor(value): particle width
+  }
+
+  private timer: Timer
+
+  constructor(vectorField: VectorialGrid, options?: ICanvasLayerVectorialGridOptions) {
+    super(vectorField, options)
+    Util.setOptions(this, options)
+    this.timer = null
+  }
+
+  public onDrawLayer() {
+    if (!this._grid || !this.isVisible()) { return }
+    this._updateOpacity()
+    this.startAnimation()
+  }
+
+  public onLayerDidMount() {
+    super.onLayerDidMount()
+    this._map.on('movestart', () => { this.stopAnimation() })
+    this._map.on('moveend', () => { this.startAnimation() })
+  }
+
+  protected startAnimation() {
+    const ctx = this._getDrawingContext()
+    if (!ctx) { return }
+    const paths = this._prepareParticlePaths()
+
+    if (this.timer) {
+      this.timer.restart(() => {
+        this._moveParticles(paths)
+        this._drawParticles(ctx, paths)
+      }, this.options.duration)
+    } else {
+      this.timer = interval(() => {
+        this._moveParticles(paths)
+        this._drawParticles(ctx, paths)
+      }, this.options.duration)
     }
+  }
 
-    private timer: Timer
+  protected onLayerWillUnmount() {
+    this.stopAnimation()
+    super.onLayerWillUnmount()
+  }
 
-    constructor(vectorField: VectorialGrid, options?: ICanvasLayerVectorialGridOptions) {
-        super(vectorField, options)
-        Util.setOptions(this, options)
-        this.timer = null
+  protected _hideCanvas() {
+    this.stopAnimation()
+    super._hideCanvas()
+  }
+
+  private _drawParticle(ctx: CanvasRenderingContext2D, par: {
+    x: number, y: number, [z: string]: number
+  }) {
+    const source = new LatLng(par.y, par.x)
+    const target = new LatLng(par.yt, par.xt)
+
+    if (
+      this._map != null &&
+      this._map.getBounds().contains(source) &&
+      par.age <= this.options.maxAge
+    ) {
+      const pA = this._map.latLngToContainerPoint(source)
+      const pB = this._map.latLngToContainerPoint(target)
+
+      ctx.beginPath()
+      ctx.moveTo(pA.x, pA.y)
+      ctx.lineTo(pB.x, pB.y)
+
+      // next-step movement
+      par.x = par.xt
+      par.y = par.yt
+
+      // simple color vs. magnitude dependant colormap
+      ctx.strokeStyle = (typeof this.options.color === 'function') ?
+        `rgba(${this.options.color.domain(this.options.domain)(par.m).rgba().join(',')})` :
+        this.options.color
+
+      // Magnitude dependant linewidth
+      ctx.lineWidth = (typeof this.options.width === 'function') ? this.options.width(par.m) : this.options.width
+
+      ctx.stroke()
     }
+  }
 
-    public onDrawLayer(viewInfo: IViewInfo) {
-        if (!this._grid || !this.isVisible()) { return }
+  private _prepareParticlePaths() {
+    const paths = []
 
-        this._updateOpacity()
-
-        const ctx = this._getDrawingContext()
-        const paths = this._prepareParticlePaths()
-
-        this.timer = interval(() => {
-            this._moveParticles(paths)
-            this._drawParticles(ctx, paths, viewInfo)
-        }, this.options.duration)
-    }
-
-    // De momento non se fai nada aquí
-    // onLayerDidMount() { super.onLayerDidMount(); }
-
-    protected onLayerWillUnmount() {
-        this._stopAnimation()
-        super.onLayerWillUnmount()
-    }
-
-    protected _hideCanvas() {
-        this._stopAnimation()
-        super._hideCanvas()
-    }
-
-    private _drawParticle(viewInfo: IViewInfo, ctx: CanvasRenderingContext2D, par: {
+    for (let i = 0; i < this.options.paths; i++) {
+      const p: {
         x: number, y: number, [z: string]: number
-    }) {
-        const source = new LatLng(par.y, par.x)
-        const target = new LatLng(par.yt, par.xt)
+      } = this._grid.randomLLPosition()
+      p.age = this._randomAge()
+      paths.push(p)
+    }
+    return paths
+  }
 
-        if (
-            this._map != null &&
-            viewInfo.bounds.contains(source) &&
-            par.age <= this.options.maxAge
-        ) {
-            const pA = this._map.latLngToContainerPoint(source)
-            const pB = this._map.latLngToContainerPoint(target)
+  private _randomAge() { return Math.floor(Math.random() * this.options.maxAge) }
 
-            ctx.beginPath()
-            ctx.moveTo(pA.x, pA.y)
-            ctx.lineTo(pB.x, pB.y)
+  /**
+   * Builds the paths, adding 'particles' on each animation step, considering
+   * their properties (age / position source > target)
+   */
+  private _moveParticles(paths: Array<{ x: number, y: number, [x: string]: number }>) {
 
-            // next-step movement
-            par.x = par.xt
-            par.y = par.yt
+    const escalaX = (this._grid.xurCorner - this._grid.xllCorner) / this.map.distance(
+      new LatLng(this._grid.xllCorner, this._grid.yllCorner),
+      new LatLng(this._grid.xurCorner, this._grid.yllCorner))
+    const escalaY = (this._grid.yurCorner - this._grid.yllCorner) / this.map.distance(
+      new LatLng(this._grid.xllCorner, this._grid.yllCorner),
+      new LatLng(this._grid.xllCorner, this._grid.yurCorner))
 
-            // colormap vs. simple color
-            const color = this.options.color
-            ctx.strokeStyle = color
-            /* if (color instanceof CanvasGradient) {
-                ctx.strokeStyle = color(par.m)
-            } */
+    paths.forEach((par) => {
+      if (par.age > this.options.maxAge) {
+        // restart, on a random x,y
+        par.age = 0
+        this._grid.randomLLPosition(par)
+      }
 
-            const width = this.options.width
-            ctx.lineWidth = width
-            /* if (typeof width === 'function') {
-                ctx.lineWidth = width(par.m)
-            } */
+      const zoomScales = [
+        500000, 250000, 15000, 7000, 35000, 15000, 10000,
+        4000, 2000, 1000, 500, 250, 150, 70, 35, 15, 8, 4, 2, 1
+      ]
 
-            ctx.stroke()
+      const interpFunc = (
+        this.options.interpolate ? this._grid.interpolatedValueAt : this._grid.valueAt).bind(this._grid)
+
+      const vector = interpFunc(par.x, par.y)
+      if (vector === null) {
+        par.age = this.options.maxAge
+      } else {
+        // the next point will be...
+        const xt = par.x + vector.u * escalaX * zoomScales[this.map.getZoom()] * this.options.velocityScale
+        const yt = par.y + vector.v * escalaY * zoomScales[this.map.getZoom()] * this.options.velocityScale
+
+        if (this._grid.hasValueAt(xt, yt)) {
+          [par.xt, par.yt, par.m] = [xt, yt, vector.magnitude()]
+        } else {
+          par.age = this.options.maxAge
         }
-    }
+      }
+      par.age += 1
+    })
+  }
 
-    private _prepareParticlePaths() {
-        const paths = []
+  /**
+   * Draws the paths on each step
+   */
+  private _drawParticles(ctx: CanvasRenderingContext2D, paths: Array<{ x: number, y: number, [z: string]: number }>) {
+    // Previous paths...
+    const prev = ctx.globalCompositeOperation
+    ctx.globalCompositeOperation = 'destination-in'
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    // ctx.globalCompositeOperation = 'source-over'
+    ctx.globalCompositeOperation = prev
 
-        for (let i = 0; i < this.options.paths; i++) {
-            const p: {
-                x: number, y: number, [z: string]: number
-            } = this._grid.randomPosition()
-            p.age = this._randomAge()
-            paths.push(p)
-        }
-        return paths
-    }
+    // fading paths...
+    ctx.fillStyle = `rgba(0, 0, 0, ${this.options.fade})`
 
-    private _randomAge() {
-        return Math.floor(Math.random() * this.options.maxAge)
-    }
+    // New paths
+    paths.forEach((par) => {
+      if (par.age < this.options.maxAge) { this._drawParticle(ctx, par) }
+    })
+  }
 
-    /**
-     * Builds the paths, adding 'particles' on each animation step, considering
-     * their properties (age / position source > target)
-     */
-    private _moveParticles(paths: Array<{ x: number, y: number, [x: string]: number }>) {
-        // const screenFactor = 1 / this._map.getZoom() // consider using a 'screenFactor' to ponderate velocityScale
-        paths.forEach((par) => {
-            if (par.age > this.options.maxAge) {
-                // restart, on a random x,y
-                par.age = 0
-                this._grid.randomPosition(par)
-            }
-
-            const vector = this._grid.valueAt(par.x, par.y)
-            if (vector === null) {
-                par.age = this.options.maxAge
-            } else {
-                // the next point will be...
-                const xt = par.x + vector.u * this.options.velocityScale // * screenFactor
-                const yt = par.y + vector.v * this.options.velocityScale // * screenFactor
-
-                if (this._grid.hasValueAt(xt, yt)) {
-                    par.xt = xt
-                    par.yt = yt
-                    par.m = vector.magnitude()
-                } else {
-                    // not visible anymore...
-                    par.age = this.options.maxAge
-                }
-            }
-            par.age += 1
-        })
-    }
-
-    /**
-     * Draws the paths on each step
-     */
-    private _drawParticles(ctx: CanvasRenderingContext2D, paths: Array<{ x: number, y: number, [z: string]: number }>, viewInfo: IViewInfo) {
-        // Previous paths...
-        const prev = ctx.globalCompositeOperation
-        ctx.globalCompositeOperation = 'destination-in'
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        // ctx.globalCompositeOperation = 'source-over'
-        ctx.globalCompositeOperation = prev
-
-        // fading paths...
-        ctx.fillStyle = `rgba(0, 0, 0, ${this.options.fade})`
-        ctx.lineWidth = this.options.width
-        ctx.strokeStyle = this.options.color
-
-        // New paths
-        paths.forEach((par) => {
-            if (par.age < this.options.maxAge) { this._drawParticle(viewInfo, ctx, par) }
-        })
-    }
-
-    private _stopAnimation() {
-        if (this.timer) {
-            this.timer.stop()
-        }
-    }
+  private stopAnimation() { if (this.timer) { this.timer.stop() } }
 }

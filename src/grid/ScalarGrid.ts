@@ -1,9 +1,6 @@
 import { max, min } from 'd3-array'
 import { Grid, IGridParams } from './Grid'
 
-// tslint:disable-next-line:no-var-requires
-// const GeoTIFF = require('geotiff')
-
 export interface IScalarGrid extends IGridParams {
     reverseX?: boolean
     reverseY?: boolean
@@ -15,140 +12,14 @@ export interface IScalarGrid extends IGridParams {
  */
 export class ScalarGrid extends Grid<number> {
 
-    public static fromData(def: IGridParams, datos: Array<{ [x: string]: number }>, nomeVar: string = 'c'): ScalarGrid {
-
+    public static fromData(def: IScalarGrid, datos: Array<{ [x: string]: number }>, nomeVar: string = 'c'): ScalarGrid {
         const values: number[] = datos.map((it: { [x: string]: number }) => it[nomeVar])
-
-        const p: IScalarGrid = def
-        p.reverseY = true
-        p.zs = values
-        return new ScalarGrid(p)
-
+        return new ScalarGrid({ ...def, zs: values })
     }
 
-    public static fromArray(def: IGridParams, values: number[]): ScalarGrid {
-
-        // const values: number[] = datos.map((it: { [x: string]: number }) => it[nomeVar])
-
-        const p: IScalarGrid = def
-        p.reverseY = true
-        p.zs = values
-        return new ScalarGrid(p)
-
+    public static fromArray(def: IScalarGrid, values: number[]): ScalarGrid {
+        return new ScalarGrid({ ...def, zs: values })
     }
-    /**
-     * Creates a ScalarField from the content of an ASCIIGrid file
-     * @param   {String}   asc
-     * @returns {ScalarField}
-     */
-    /* public static fromASCIIGrid(asc: string, scaleFactor = 1) {
-        // console.time('ScalarField from ASC')
-
-        const lines = asc.split('\n')
-
-        // Header
-        ScalarGrid._checkIsValidASCIIGridHeader(lines)
-
-        const n = /-?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+\-]?\d+)?/ // any number
-        const p: IScalarGrid = {
-            cellSize: { x: parseFloat(lines[4].match(n).toString()), y: parseFloat(lines[4].match(n).toString()) },
-            nCols: parseInt(lines[0].match(n).toString(), 10),
-            nRows: parseInt(lines[1].match(n).toString(), 10),
-            xllCorner: parseFloat(lines[2].match(n).toString()),
-            yllCorner: parseFloat(lines[3].match(n).toString()),
-        }
-        const noDataValue = lines[5]
-            .toUpperCase()
-            .replace('NODATA_VALUE', '')
-            .trim()
-
-        // Data (left-right and top-down)
-        const zs: number[] = [] // TODO Consider using TypedArray (& manage NO_DATA)
-        for (let i = 6; i < lines.length; i++) {
-            const line = lines[i].trim()
-            if (line === '') { break }
-
-            const items = line.split(' ')
-            const values = items.map((it) => {
-                return it !== noDataValue ? parseFloat(it) * scaleFactor : null
-            })
-            zs.push(...values)
-        }
-        p.zs = zs
-
-        // console.timeEnd('ScalarField from ASC')
-        return new ScalarGrid(p)
-    } */
-
-    /**
-     * Creates a ScalarField from the content of a GeoTIFF file, as read by geotiff.js
-     * @param   {ArrayBuffer}   data
-     * @param   {Number}   bandIndex
-     * @returns {ScalarField}
-     */
-    /* public static fromGeoTIFF(data: any, bandIndex = 0) {
-        // console.time('ScalarField from GeoTIFF')
-
-        const tiff = GeoTIFF.parse(data) // geotiff.js
-        const image = tiff.getImage()
-        const rasters = image.readRasters()
-        const tiepoint = image.getTiePoints()[0]
-        const fileDirectory = image.getFileDirectory()
-        const pixelScale = fileDirectory.ModelPixelScale
-
-        // Check "Not supported raster"
-        const [xScale, yScale] = pixelScale
-        if (xScale !== yScale) {
-            throw new Error(`GeoTIFF with different scale in x: ${xScale} y: ${yScale} is not currently supported
-            \nMake sure the difference is just a floating precission issue`)
-        }
-
-        let _zs = rasters[bandIndex] // left-right and top-down order
-
-        if (fileDirectory.GDAL_NODATA) {
-            const noData = parseFloat(fileDirectory.GDAL_NODATA)
-            // console.log(noData)
-            const simpleZS = Array.from(_zs) // to simple array, so null is allowed | TODO efficiency??
-            _zs = simpleZS.map((z) => {
-                return z === noData ? null : z
-            })
-        }
-
-        const p = {
-            cellSize: pixelScale[0],
-            nCols: image.getWidth(),
-            nRows: image.getHeight(),
-            xllCorner: tiepoint.x,
-            yllCorner: tiepoint.y - image.getHeight() * pixelScale[0],
-            zs: _zs
-        }
-
-        // console.timeEnd('ScalarField from GeoTIFF')
-        return new ScalarGrid(p)
-    } */
-
-    /* private static _checkIsValidASCIIGridHeader(lines: string[]) {
-        const upperCasesLines = lines.map((lin) => lin.toUpperCase())
-
-        const parameters = [
-            'NCOLS',
-            'NROWS',
-            'XLLCORNER',
-            'YLLCORNER',
-            'CELLSIZE',
-            'NODATA_VALUE'
-        ]
-
-        let i = 0
-        for (const expected of parameters) {
-            const line = upperCasesLines[i]
-            const found = line.indexOf(expected) !== -1
-            if (!found) {
-                throw new Error(`Not valid ASCIIGrid: expected '${expected}' at line '${line}' [lin. nº ${i}]`)
-            }
-            i++
-        }
-    } */
 
     private reverseX: boolean
     private reverseY: boolean
@@ -181,8 +52,7 @@ export class ScalarGrid extends Grid<number> {
      * @returns {Array.<Array.<Number>>} - grid[row][column]--> Number
      */
     protected _buildGrid() {
-        const grid = this._arrayTo2d(this.zs, this.nRows, this.nCols, this.reverseX, this.reverseY)
-        return grid
+        return this._arrayTo2d(this.zs, this.nRows, this.nCols, this.reverseX, this.reverseY)
     }
 
     /**
@@ -191,10 +61,7 @@ export class ScalarGrid extends Grid<number> {
      * @returns {Array} - [min, max]
      */
     protected _calculateRange(): number[] {
-        let data: number[] = this.zs
-        if (this._inFilter) {
-            data = data.filter(this._inFilter)
-        }
+        const data = this._inFilter ? this.zs.filter(this._inFilter) : this.zs
         return [min(data), max(data)]
     }
 

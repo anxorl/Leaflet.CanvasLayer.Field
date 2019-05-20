@@ -83,7 +83,7 @@ export class ColorBar extends Control {
             .style('font-size', '15px')
             .style('font-weight', 'bold')
             .attr('class', 'leaflet-control-colorBar-title')
-            .text(this.options.title + ' (' + this.options.units + ')')
+            .html(`${this.options.title} (${this.options.units})`)
         return d.innerHTML
     }
 
@@ -130,10 +130,10 @@ export class ColorBar extends Control {
             .attr('fill', (d) => d.color.hex())
         buckets
             .append('title')
-            .text(
-            (d) =>
-                `${d.value.toFixed(this.options.decimals)} ${this.options
-                    .units}`
+            .html(
+                (d): string =>
+                    `${d.value.toFixed(this.options.decimals)} ${this.options
+                        .units}`
             )
     }
 

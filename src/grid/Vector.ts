@@ -17,9 +17,7 @@ export class Vector {
      * Magnitude
      * @returns {Number}
      */
-    public magnitude(): number {
-        return Math.sqrt(this.u * this.u + this.v * this.v)
-    }
+    public magnitude(): number { return Math.sqrt(this.u * this.u + this.v * this.v) }
 
     /**
      * Angle in degrees (0 to 360º) --> Towards

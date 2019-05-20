@@ -97,6 +97,14 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
         return bounds
     }
 
+    public getLatLngBounds(): LatLngBounds {
+        const bb = this._grid.llextent()
+        const southWest = new LatLng(bb[1], bb[0])
+        const northEast = new LatLng(bb[3], bb[2])
+        const bounds = new LatLngBounds(southWest, northEast)
+        return bounds
+    }
+
     protected show() {
         this._visible = true
         this._showCanvas()
@@ -120,6 +128,7 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
     }
 
     protected _getDrawingContext(): CanvasRenderingContext2D {
+        if (!this._canvas) { return null }
         const g = this._canvas.getContext('2d')
         g.clearRect(0, 0, this._canvas.width, this._canvas.height)
         return g
@@ -151,24 +160,6 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
         DomUtil.setPosition(this._canvas, topLeft)
     }
 
-    /*     _enableIdentify() {
-            //this._map.on('click', this._onClick, this)
-            //this._map.on('mousemove', this._onMouseMove, this)
-
-            this.options.onClick && this.on('click', this.options.onClick, this)
-            this.options.onMouseMove &&
-                this.on('mousemove', this.options.onMouseMove, this)
-        } */
-
-    /*     _disableIdentify() {
-        this._map.off('click', this._onClick, this)
-        this._map.off('mousemove', this._onMouseMove, this)
-
-        this.options.onClick && this.off('click', this.options.onClick, this)
-        this.options.onMouseMove &&
-            this.off('mousemove', this.options.onMouseMove, this)
-    } */
-
     private _changeCursorOn(v: { latlng: LatLng, value: T }) {
         if (!this.options.mouseMoveCursor) { return }
 
@@ -189,5 +180,4 @@ export abstract class CanvasLayerGrid<T extends number | Vector> extends CanvasL
         }
         return result
     }
-
 }

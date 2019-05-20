@@ -45,10 +45,8 @@ export class Cell<T extends number | Vector> {
      */
     public getBounds(): LatLngBounds {
         const [halfx, halfy] = [this._size.x / 2.0, this._size.y / 2.0]
-        const cLat = this.center.lat
-        const cLng = this.center.lng
-        const ul = new LatLng(cLat + halfy, cLng - halfx)
-        const lr = new LatLng(cLat - halfy, cLng + halfx)
+        const ul = new LatLng(this.center.lat + halfy, this.center.lng - halfx)
+        const lr = new LatLng(this.center.lat - halfy, this.center.lng + halfx)
 
         return latLngBounds(latLng(lr.lat, ul.lng), latLng(ul.lat, lr.lng))
     }
