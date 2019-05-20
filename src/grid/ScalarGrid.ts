@@ -12,12 +12,12 @@ export interface IScalarGrid extends IGridParams {
  */
 export class ScalarGrid extends Grid<number> {
 
-    public static fromData(def: IGridParams, datos: Array<{ [x: string]: number }>, nomeVar: string = 'c'): ScalarGrid {
+    public static fromData(def: IScalarGrid, datos: Array<{ [x: string]: number }>, nomeVar: string = 'c'): ScalarGrid {
         const values: number[] = datos.map((it: { [x: string]: number }) => it[nomeVar])
         return new ScalarGrid({ ...def, zs: values })
     }
 
-    public static fromArray(def: IGridParams, values: number[]): ScalarGrid {
+    public static fromArray(def: IScalarGrid, values: number[]): ScalarGrid {
         return new ScalarGrid({ ...def, zs: values })
     }
 
