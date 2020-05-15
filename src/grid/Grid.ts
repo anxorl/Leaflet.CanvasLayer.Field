@@ -30,9 +30,11 @@ export abstract class Grid<T extends number | Vector> {
   // Esquinas en ll (Usar as de params.def para obter as proxectadas)
   public get xllCorner() { return this.projection.inverse([this.defGrid.xllCorner, this.defGrid.yllCorner])[0] }
   public get yllCorner() { return this.projection.inverse([this.defGrid.xllCorner, this.defGrid.yllCorner])[1] }
+
   // corresponding corners in ll
   public get xurCorner() { return this.projection.inverse([this.defGrid.xurCorner, this.defGrid.yurCorner])[0] }
   public get yurCorner() { return this.projection.inverse([this.defGrid.xurCorner, this.defGrid.yurCorner])[1] }
+
   public get range() { return this._range }
 
   // alias
