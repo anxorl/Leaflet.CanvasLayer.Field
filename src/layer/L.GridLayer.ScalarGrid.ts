@@ -3,6 +3,7 @@ import * as chroma from 'chroma-js'
 import { Coords, DomUtil, DoneCallback, GridLayer, GridLayerOptions, LatLng, LatLngBounds, Point, Util } from 'leaflet'
 import { ColorScale } from '../colorscale/L.ColorScale'
 import { ScalarGrid } from '../grid/ScalarGrid'
+import { ScalarPolarGrid } from '../LeafletCanvasGrid'
 
 export interface IScalarParameter {
   nome: string
@@ -22,9 +23,9 @@ export interface ITropGridLayerOptions extends GridLayerOptions {
 export class TropGridLayer extends GridLayer {
 
   protected options: ITropGridLayerOptions
-  private _grid: ScalarGrid
+  protected _grid: ScalarGrid | ScalarPolarGrid
 
-  constructor(datos: ScalarGrid, ops?: ITropGridLayerOptions) {
+  constructor(datos: ScalarGrid | ScalarPolarGrid, ops?: ITropGridLayerOptions) {
     super(ops)
     this._grid = datos
     Util.setOptions(this, ops)
@@ -96,7 +97,7 @@ export class TropGridLayer extends GridLayer {
    * param {Number} width
    * param {Number} height
    */
-  private _prepareImageIn(data: Uint8ClampedArray, coords: Coords, size: Point, overstep?: number) {
+  protected _prepareImageIn(data: Uint8ClampedArray, coords: Coords, size: Point, overstep?: number) {
     if (!this._map) { return }
     const scaledCoords = coords.scaleBy(this.getTileSize())
     const i0 = scaledCoords.x
