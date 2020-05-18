@@ -5,35 +5,61 @@ const proj4 = 'default' in proj4_ ? proj4_['default'] : proj4_
 import { Cell, ISizeCell } from './Cell'
 import { Vector } from './Vector'
 
-export interface IGridParams {
+export interface IPolarParams {
   cellSize: ISizeCell
-  nCols: number
-  nRows: number
-  xllCorner: number
-  yllCorner: number
-  xurCorner?: number
-  yurCorner?: number
+  x0: number
+  y0: number
+  r0: number
+  dr: number
+  lambda0: number
+  dlambda: number
+  nRBins: number
+  nAngles: number
   projection?: string
+  rlength?: number
 }
 
 /**
  *  Abstract class for a set of values (Vector | Scalar)
  *  assigned to a regular 2D-grid (lon-lat), aka 'a Raster source'
  */
-export abstract class Grid<T extends number | Vector> {
+export abstract class Polar<T extends number | Vector> {
   // export abstract class Grid<T extends number | Vector> extends Array<Array<Cell<T>>> {
 
   public get cellSize() { return this.defGrid.cellSize }
-  public get nCols() { return this.defGrid.nCols }
-  public get nRows() { return this.defGrid.nRows }
+  public get nCols() { return this.defGrid.nRBins }
+  public get nRows() { return this.defGrid.nAngles }
+
+  public get centerLL() { return [this.defGrid.x0, this.defGrid.y0] }
+  public get center() { return this.projection.forward([this.defGrid.x0, this.defGrid.y0]) }
 
   // Esquinas en ll (Usar as de params.def para obter as proxectadas)
-  public get xllCorner() { return this.projection.inverse([this.defGrid.xllCorner, this.defGrid.yllCorner])[0] }
-  public get yllCorner() { return this.projection.inverse([this.defGrid.xllCorner, this.defGrid.yllCorner])[1] }
+  public get xllCornerLL() {
+    const rLength = this.defGrid.r0 + this.defGrid.dr * this.defGrid.nRBins
+    return this.projection.inverse([
+      this.center[0] - rLength,
+      this.center[1] - rLength])[0]
+  }
+  public get yllCornerLL() {
+    const rLength = this.defGrid.r0 + this.defGrid.dr * this.defGrid.nRBins
+    return this.projection.inverse([
+      this.center[0] - rLength,
+      this.center[1] - rLength])[1]
+  }
 
   // corresponding corners in ll
-  public get xurCorner() { return this.projection.inverse([this.defGrid.xurCorner, this.defGrid.yurCorner])[0] }
-  public get yurCorner() { return this.projection.inverse([this.defGrid.xurCorner, this.defGrid.yurCorner])[1] }
+  public get xurCornerLL() {
+    const rLength = this.defGrid.r0 + this.defGrid.dr * this.defGrid.nRBins
+    return this.projection.inverse([
+      this.center[0] + rLength,
+      this.center[1] + rLength])[0]
+  }
+  public get yurCornerLL() {
+    const rLength = this.defGrid.r0 + this.defGrid.dr * this.defGrid.nRBins
+    return this.projection.inverse([
+      this.center[0] + rLength,
+      this.center[1] + rLength])[1]
+  }
 
   public get range() { return this._range }
 
@@ -44,15 +70,15 @@ export abstract class Grid<T extends number | Vector> {
   public _inFilter: (e: T) => boolean
 
   protected grid: T[][]
-  protected defGrid: IGridParams
+  protected defGrid: IPolarParams
   protected _range: number[]
 
   protected projection: proj4.Converter
 
-  constructor(params: IGridParams) {
+  constructor(params: IPolarParams) {
     this.defGrid = params
-    this.defGrid.xurCorner = this.defGrid.xllCorner + this.defGrid.nCols * this.defGrid.cellSize.x
-    this.defGrid.yurCorner = this.defGrid.yllCorner + this.defGrid.nRows * this.defGrid.cellSize.y
+    this.defGrid.rlength = this.defGrid.rlength
+      || this.defGrid.r0 + this.defGrid.dr * this.defGrid.nRBins
 
     this.projection = proj4('+proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees',
       this.defGrid.projection
@@ -62,13 +88,15 @@ export abstract class Grid<T extends number | Vector> {
     this.grid = null // to be defined by subclasses
 
     this._inFilter = null
+
+    // this.defGrid.lambda0 = (450 - this.defGrid.lambda0) % 360
   }
 
   /**
    * Number of cells in the grid (rows * cols)
    * @returns {Number}
    */
-  public numCells(): number { return this.defGrid.nRows * this.defGrid.nCols }
+  public numCells(): number { return this.defGrid.nRBins * this.defGrid.nAngles }
 
   /**
    * Grid bounds in Latitude - Longitude
@@ -76,8 +104,8 @@ export abstract class Grid<T extends number | Vector> {
    */
   public getBounds(): LatLngBounds {
     return new LatLngBounds([
-      [this.yllCorner, this.xllCorner],
-      [this.yurCorner, this.xurCorner]
+      [this.yllCornerLL, this.xllCornerLL],
+      [this.yurCornerLL, this.xurCornerLL]
     ])
   }
 
@@ -87,8 +115,8 @@ export abstract class Grid<T extends number | Vector> {
    */
   public getCells(stride = 1): Array<Cell<T>> {
     const cells: Array<Cell<T>> = []
-    for (let j = 0; j < this.defGrid.nRows; j = j + stride) {
-      for (let i = 0; i < this.defGrid.nCols; i = i + stride) {
+    for (let j = 0; j < this.defGrid.nAngles; j = j + stride) {
+      for (let i = 0; i < this.defGrid.nRBins; i = i + stride) {
         const [lon, lat] = this.lonLatAtIndexes(i, j)
         const center = new LatLng(lat, lon)
         const value = this._valueAtIndexes(i, j)
@@ -113,14 +141,10 @@ export abstract class Grid<T extends number | Vector> {
    * @returns {Number[]} [xmin, ymin, xmax, ymax]
    */
   public extent(): number[] {
-    const [xmin, xmax] = [this.defGrid.xllCorner, this.defGrid.xurCorner]
-    const dx = (xmax - xmin) / this.nCols
-    const dy = (this.defGrid.yurCorner - this.defGrid.yllCorner) / this.nRows
-    return [
-      xmin - 0.2 * dx,
-      this.defGrid.yllCorner - .2 * dy,
-      xmax + .2 * dx,
-      this.defGrid.yurCorner + .2 * dy]
+    const rLength = this.defGrid.r0 + this.defGrid.dr * this.defGrid.nRBins
+    const [xmin, xmax] = [this.defGrid.x0 - rLength, this.center[0] + rLength]
+    const [ymin, ymax] = [this.defGrid.y0 - rLength, this.center[1] + rLength]
+    return [xmin, ymin, xmax, ymax]
   }
 
   /**
@@ -140,14 +164,14 @@ export abstract class Grid<T extends number | Vector> {
    * @param   {Number} lat - latitude
    * @returns {Boolean}
    */
-  public contains(lon: number, lat: number): boolean {
-    // const [lo, la] = this.projection.forward([lon, lat])
+  public contains(lo: number, la: number): boolean {
 
-    // let longitudeIn = this.isContinuous ? true : (lon >= xmin && lon <= xmax)
-    const longitudeIn = lon >= this.xllCorner && lon <= this.xurCorner
-    const latitudeIn = lat >= this.yllCorner && lat <= this.yurCorner
+    const distance = this._getDistance(lo, la)
+    const angle = this._getAngle(lo, la)
 
-    return longitudeIn && latitudeIn
+    return distance >= this.defGrid.r0 && distance <= this.defGrid.rlength
+      && angle - this.defGrid.lambda0 + 360 >= 0
+      && (angle - this.defGrid.lambda0 + 360) % 360 <= this.defGrid.nAngles * this.defGrid.dlambda
   }
 
   /**
@@ -245,11 +269,12 @@ export abstract class Grid<T extends number | Vector> {
    * @returns {{x: Number, y: Number}} - object with x, y (lon, lat)
    */
   public randomPosition(o?: { x: number, y: number }): { x: number, y: number } {
-    const i = (Math.random() * this.defGrid.nCols) || 0
-    const j = (Math.random() * this.defGrid.nRows) || 0
+    const i = (Math.random() * this.defGrid.nAngles) || 0
+    const j = (Math.random() * this.defGrid.nRBins) || 0
     const res: { x: number, y: number } = { x: 0, y: 0 }
-    res.x = this._longitudeAtX(i)
-    res.y = this._latitudeAtY(j)
+    const [x, y] = this.lonLatAtIndexes(i, j)
+    res.x = x
+    res.y = y
 
     if (o) {
       o.x = res.x
@@ -279,8 +304,8 @@ export abstract class Grid<T extends number | Vector> {
    * @returns {Number[]} [lon, lat]
    */
   public lonLatAtIndexes(i: number, j: number): number[] {
-    const lon = this._longitudeAtX(i)
-    const lat = this._latitudeAtY(j)
+    const lon = this.center[0] + j * Math.sin(i)
+    const lat = this.center[1] + j * Math.cos(i)
 
     return this.projection.inverse([lon, lat])
   }
@@ -317,6 +342,43 @@ export abstract class Grid<T extends number | Vector> {
   }
 
   /**
+   * Return the meteorologicar 'to' angle between
+   * [lo,la] and the center of the polar grid.
+   *
+   * @param lo  {number} Longitude in degrees
+   * @param la  {number} Latitude in degrees
+   * @returns {number}
+   */
+  protected _getAngle(lo: number, la: number) {
+
+    const [lon, lat] = this.projection.forward([lo, la])
+    const [dx, dy] = [lon - this.center[0], lat - this.center[1]]
+
+    const angle = Math.atan2(dx, dy) * 180 / Math.PI
+
+    const UTMCenterMeridian = this.projection.inverse([500000, 0])[0]
+    const angleCorrection = Math.atan(Math.tan(
+      this.defGrid.x0 - (UTMCenterMeridian)) * Math.sin(this.defGrid.y0))
+
+    return angle - angleCorrection
+  }
+
+  /**
+   * Distance from [lo, la] to teh center of the polar grid
+   *
+   * @param lo  {number} Longitude in degrees
+   * @param la  {number} Latitude in degrees
+   * @returns {number}
+   */
+  protected _getDistance(lo: number, la: number) {
+    const [lon, lat] = this.projection.forward([lo, la])
+    const [dx, dy] = [lon - this.center[0], lat - this.center[1]]
+
+    return Math.sqrt(dx * dx + dy * dy)
+
+  }
+
+  /**
    * Get decimal indexes, clampling on borders
    * @private
    * @param {Number} lon
@@ -324,13 +386,20 @@ export abstract class Grid<T extends number | Vector> {
    * @returns {Array}    [[Description]]
    */
   private _getDecimalIndexes(lon: number, lat: number): number[] {
-
     const punto = this.projection.forward([lon, lat])
-    const ii = (punto[0] - this.defGrid.xllCorner) / this.defGrid.cellSize.x
-    const i = this._clampColumnIndex(ii)
 
-    const jj = (this.defGrid.yurCorner - punto[1]) / this.defGrid.cellSize.y
-    const j = this._clampRowIndex(jj)
+    const distanceX = punto[0] - this.center[0]
+    const distanceY = punto[1] - this.center[1]
+    const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
+
+    let angle = Math.atan2(distanceX, distanceY) * 180 / Math.PI
+    angle = angle - Math.atan(Math.tan(this.defGrid.x0 - (-3)) * Math.sin(this.defGrid.y0))
+
+    const ii = (distance - this.defGrid.r0) / this.defGrid.dr
+    const i = this._clampRowIndex(ii)
+
+    const jj = angle + 360 - this.defGrid.lambda0 / this.defGrid.dlambda
+    const j = this._clampColumnIndex(jj)
 
     return [i, j]
   }
@@ -398,24 +467,24 @@ export abstract class Grid<T extends number | Vector> {
    * @param   {Number} i - column index (integer)
    * @returns {Number} longitude at the center of the cell
    */
-  private _longitudeAtX(i: number): number {
+  /* private _longitudeAtX(i: number): number {
     const halfPixel = this.defGrid.cellSize.x / 2.0
     let lon = this.defGrid.xllCorner + halfPixel + i * this.defGrid.cellSize.x
     // if (this.longitudeNeedsToBeWrapped) {
     lon = lon > 180 ? lon - 360 : lon
     // }
     return lon
-  }
+  } */
 
   /**
    * Latitude for grid-index
    * @param   {Number} j - row index (integer)
    * @returns {Number} latitude at the center of the cell
    */
-  private _latitudeAtY(j: number): number {
+  /* private _latitudeAtY(j: number): number {
     const halfPixel = this.defGrid.cellSize.y / 2.0
     return this.defGrid.yurCorner - halfPixel - j * this.defGrid.cellSize.y
-  }
+  } */
 
   /**
    * Check the column index is inside the field,
@@ -429,7 +498,7 @@ export abstract class Grid<T extends number | Vector> {
     if (ii < 0) {
       i = 0
     }
-    const maxCol = this.defGrid.nCols - 1
+    const maxCol = this.defGrid.nAngles - 1
     if (ii > maxCol) {
       i = this.isContinuous ? 0 : maxCol // duplicate first column when raster is continuous
     }
@@ -448,7 +517,7 @@ export abstract class Grid<T extends number | Vector> {
     if (jj < 0) {
       j = 0
     }
-    const maxRow = this.defGrid.nRows - 1
+    const maxRow = this.defGrid.nRBins - 1
     if (jj > maxRow) {
       j = maxRow
     }
